@@ -1,0 +1,4 @@
+__pycache__/
+media/
+line_*.mp3
+.DS_Store
