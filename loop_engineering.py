@@ -108,7 +108,8 @@ class LoopEngineering(Scene):
             loop_circle.point_at_angle(PI / 2)
         ).rotate(-PI / 2)
         loop_label = Text("Loop Engineering", font_size=14, color=GREEN, weight=BOLD, font="Arial").next_to(loop_circle, UP, buff=0.2)
-        calm_brain = Text("🧠", font_size=28, font="Arial").move_to(loop_circle.get_center())
+        # Avoid specifying font="Arial" for Emojis to let them fallback to system emoji fonts correctly
+        calm_brain = Text("🧠", font_size=28).move_to(loop_circle.get_center())
         right_group = VGroup(loop_circle, loop_arrow_head, calm_brain, loop_label)
 
         self.play(FadeIn(left_group, shift=UP), run_time=0.8)
@@ -388,8 +389,8 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 7. CALL TO ACTION (CTA) (1:15-1:22, duration = 7.49s) - PREMIUM YOUTUBE OUTRO
         # =========================================================================
-        # Shift the final text up and scale it down slightly to fit beautifully
-        self.play(final_card.animate.shift(UP * 1.1).scale(0.85), run_time=0.8)
+        # CRITICAL OVERLAP FIX: Move the final card all the way to the top edge and scale it down
+        self.play(final_card.animate.to_edge(UP, buff=0.5).scale(0.75), run_time=0.8)
 
         # --- SUBSCRIBE BUTTON (YouTube Style) ---
         sub_btn_box = RoundedRectangle(
@@ -416,18 +417,20 @@ class LoopEngineering(Scene):
         bell_icon = VGroup(bell_body, bell_base, bell_clapper)
         
         sub_button_contents = VGroup(yt_logo, sub_text, bell_icon).arrange(RIGHT, buff=0.4)
-        sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(UP * 0.1)
+        # Positioned lower down (centered at DOWN * 0.1) to avoid overlap with top card
+        sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(DOWN * 0.1)
         
         # --- LOWER CTA ICONS (Like, Comment, Share) ---
-        like_icon = Text("👍", font_size=28, font="Arial")
+        # EMOJI FALLBACK FIX: Removed font="Arial" on icons to allow system-level emoji rendering
+        like_icon = Text("👍", font_size=28)
         like_label = Text("Like", font_size=14, color=TEXT_COLOR, font="Arial").next_to(like_icon, DOWN, buff=0.15)
         like_btn = VGroup(like_icon, like_label)
         
-        comment_icon = Text("💬", font_size=28, font="Arial")
+        comment_icon = Text("💬", font_size=28)
         comment_label = Text("Comment", font_size=14, color=TEXT_COLOR, font="Arial").next_to(comment_icon, DOWN, buff=0.15)
         comment_btn = VGroup(comment_icon, comment_label)
         
-        share_icon = Text("🔗", font_size=28, font="Arial")
+        share_icon = Text("🔗", font_size=28)
         share_label = Text("Share", font_size=14, color=TEXT_COLOR, font="Arial").next_to(share_icon, DOWN, buff=0.15)
         share_btn = VGroup(share_icon, share_label)
         
