@@ -21,38 +21,49 @@ class LoopEngineering(Scene):
             if wait_time > 0:
                 self.wait(wait_time)
 
-        # --- Helper to create beautiful speech bubbles ---
+        # --- Helper to create beautiful speech bubbles (Unified with Masking) ---
         def make_speech_bubble(width, height, color, fill_color, position, pointer_dir="left"):
             rect = RoundedRectangle(
                 width=width, height=height, corner_radius=0.25,
                 stroke_color=color, stroke_width=2.5,
                 fill_color=fill_color, fill_opacity=1
             )
-            # Create a small triangular pointer on the edge
+            # Create a small triangular pointer on the edge and mask the inner border
             if pointer_dir == "left":
+                mask = Line(
+                    rect.get_left() + UP * 0.16,
+                    rect.get_left() + DOWN * 0.16,
+                    color=fill_color, stroke_width=4.5
+                )
                 pointer = Polygon(
-                    rect.get_left() + UP * 0.15,
-                    rect.get_left() + DOWN * 0.15,
-                    rect.get_left() + LEFT * 0.25 + DOWN * 0.05,
+                    rect.get_left() + UP * 0.18,
+                    rect.get_left() + DOWN * 0.18,
+                    rect.get_left() + LEFT * 0.28 + DOWN * 0.05,
                     stroke_width=0, fill_color=fill_color, fill_opacity=1
                 )
                 border_pointer = VGroup(
-                    Line(rect.get_left() + UP * 0.15, rect.get_left() + LEFT * 0.25 + DOWN * 0.05, color=color, stroke_width=2.5),
-                    Line(rect.get_left() + DOWN * 0.15, rect.get_left() + LEFT * 0.25 + DOWN * 0.05, color=color, stroke_width=2.5)
+                    Line(rect.get_left() + UP * 0.18, rect.get_left() + LEFT * 0.28 + DOWN * 0.05, color=color, stroke_width=2.5),
+                    Line(rect.get_left() + DOWN * 0.18, rect.get_left() + LEFT * 0.28 + DOWN * 0.05, color=color, stroke_width=2.5)
                 )
             else:
+                mask = Line(
+                    rect.get_right() + UP * 0.16,
+                    rect.get_right() + DOWN * 0.16,
+                    color=fill_color, stroke_width=4.5
+                )
                 pointer = Polygon(
-                    rect.get_right() + UP * 0.15,
-                    rect.get_right() + DOWN * 0.15,
-                    rect.get_right() + RIGHT * 0.25 + DOWN * 0.05,
+                    rect.get_right() + UP * 0.18,
+                    rect.get_right() + DOWN * 0.18,
+                    rect.get_right() + RIGHT * 0.28 + DOWN * 0.05,
                     stroke_width=0, fill_color=fill_color, fill_opacity=1
                 )
                 border_pointer = VGroup(
-                    Line(rect.get_right() + UP * 0.15, rect.get_right() + RIGHT * 0.25 + DOWN * 0.05, color=color, stroke_width=2.5),
-                    Line(rect.get_right() + DOWN * 0.15, rect.get_right() + RIGHT * 0.25 + DOWN * 0.05, color=color, stroke_width=2.5)
+                    Line(rect.get_right() + UP * 0.18, rect.get_right() + RIGHT * 0.28 + DOWN * 0.05, color=color, stroke_width=2.5),
+                    Line(rect.get_right() + DOWN * 0.18, rect.get_right() + RIGHT * 0.28 + DOWN * 0.05, color=color, stroke_width=2.5)
                 )
             
-            bubble_bg = VGroup(rect, pointer, border_pointer).move_to(position)
+            # The layering order ensures the mask hides the rectangle border segment
+            bubble_bg = VGroup(rect, mask, pointer, border_pointer).move_to(position)
             return rect, bubble_bg
 
         # =========================================================================
@@ -80,10 +91,10 @@ class LoopEngineering(Scene):
             stroke_color=RED, stroke_width=3,
             fill_color="#FEF2F2", fill_opacity=1
         ).move_to(LEFT * 3.2)
-        prompt_label_left = Text("The 'perfect prompt'", font_size=16, color=RED, weight=BOLD, font="Sans").next_to(prompt_box_left, UP, buff=0.2)
+        prompt_label_left = Text("The 'perfect prompt'", font_size=14, color=RED, weight=BOLD, font="Arial").next_to(prompt_box_left, UP, buff=0.2)
         prompt_lines_left = Paragraph(
             "Write a detailed,\nexhaustive, one-shot\ninstruction upfront...",
-            font_size=14, color=TEXT_COLOR, line_spacing=0.6, alignment="center"
+            font_size=13, color=TEXT_COLOR, line_spacing=0.6, alignment="center", font="Arial"
         ).move_to(prompt_box_left.get_center())
         
         dec_line1 = Line(start=prompt_box_left.get_center()+LEFT*1.5+DOWN*0.5, end=prompt_box_left.get_center()+RIGHT*1.5+DOWN*0.5, stroke_color=MUTED, stroke_width=1, stroke_opacity=0.5)
@@ -96,8 +107,8 @@ class LoopEngineering(Scene):
         loop_arrow_head = Triangle(color=GREEN, fill_color=GREEN, fill_opacity=1).scale(0.15).move_to(
             loop_circle.point_at_angle(PI / 2)
         ).rotate(-PI / 2)
-        loop_label = Text("Loop Engineering", font_size=16, color=GREEN, weight=BOLD, font="Sans").next_to(loop_circle, UP, buff=0.2)
-        calm_brain = Text("🧠", font_size=28, font="Sans").move_to(loop_circle.get_center())
+        loop_label = Text("Loop Engineering", font_size=14, color=GREEN, weight=BOLD, font="Arial").next_to(loop_circle, UP, buff=0.2)
+        calm_brain = Text("🧠", font_size=28, font="Arial").move_to(loop_circle.get_center())
         right_group = VGroup(loop_circle, loop_arrow_head, calm_brain, loop_label)
 
         self.play(FadeIn(left_group, shift=UP), run_time=0.8)
@@ -130,7 +141,7 @@ class LoopEngineering(Scene):
             stroke_color=BLUE, stroke_width=3,
             fill_color="#EFF6FF", fill_opacity=1
         ).move_to(LEFT * 3 + UP * 0.5)
-        prompt_text = Text("One long prompt", font_size=18, color=BLUE, weight=BOLD, font="Sans").move_to(prompt_box.get_center())
+        prompt_text = Text("One long prompt", font_size=16, color=BLUE, weight=BOLD, font="Arial").move_to(prompt_box.get_center())
         prompt_group = VGroup(prompt_shadow, prompt_box, prompt_text)
 
         arrow1 = Arrow(prompt_box.get_right(), prompt_box.get_right() + RIGHT * 2, color=BOX_BORDER, stroke_width=3)
@@ -146,8 +157,8 @@ class LoopEngineering(Scene):
             fill_color=BOX_FILL, fill_opacity=1
         ).shift(RIGHT * 2.2 + UP * 0.5)
         
-        # PROPER TEXT FIX: Added font="Sans" to make it sans-serif
-        output_text = Text("Output", font_size=18, color=TEXT_COLOR, font="Sans").move_to(output_box.get_center())
+        # PROPER TEXT FIX: Added font="Arial" and font_size=16 for optimal padding
+        output_text = Text("Output", font_size=16, color=TEXT_COLOR, font="Arial").move_to(output_box.get_center())
         output_group = VGroup(output_shadow, output_box, output_text)
 
         self.play(FadeIn(prompt_group), run_time=1.0)
@@ -160,7 +171,7 @@ class LoopEngineering(Scene):
         line2 = Line(start=output_box.get_corner(DL), end=output_box.get_corner(UR), color=RED, stroke_width=6)
         red_cross = VGroup(line1, line2)
         
-        wrong_label = Text("Often wrong or incomplete", font_size=14, color=RED, weight=BOLD, font="Sans").next_to(output_box, DOWN, buff=0.25)
+        wrong_label = Text("Often wrong or incomplete", font_size=13, color=RED, weight=BOLD, font="Arial").next_to(output_box, DOWN, buff=0.25)
         
         # Shake the output box on collision
         self.play(
@@ -202,7 +213,8 @@ class LoopEngineering(Scene):
                 stroke_color=color, stroke_width=3,
                 fill_color=BOX_FILL, fill_opacity=1
             ).move_to(pos)
-            text = Text(label, font_size=16, color=color, weight=BOLD, font="Sans").move_to(pos)
+            # Reduced font_size to 14 for beautiful box padding
+            text = Text(label, font_size=14, color=color, weight=BOLD, font="Arial").move_to(pos)
             nodes.add(node)
             node_texts.add(text)
             node_shadows.add(shadow)
@@ -247,32 +259,32 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 4. WHY THIS WORKS BETTER (0:47.23-0:55, duration = 17.42s)
         # =========================================================================
-        why_title = Text("How Feedback Works", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Sans").move_to(RIGHT * 2.2 + UP * 2.2)
+        why_title = Text("How Feedback Works", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
         self.play(FadeIn(why_title), run_time=0.5)
 
-        # Use the make_speech_bubble helper for visual richness
+        # PROPER PADDING & FONT FIX: Speech bubbles slightly expanded and text set to font_size=13
         vague_rect, vague_bubble = make_speech_bubble(
-            width=3.2, height=1.0, color=MUTED, fill_color="#F1F5F9",
+            width=3.6, height=1.1, color=MUTED, fill_color="#F1F5F9",
             position=RIGHT * 3 + UP * 1.2, pointer_dir="left"
         )
-        vague_text = Text("\"Make it better\"", font_size=16, color=MUTED, weight=BOLD, font="Sans").move_to(vague_rect.get_center())
+        vague_text = Text("\"Make it better\"", font_size=13, color=MUTED, weight=BOLD, font="Arial").move_to(vague_rect.get_center())
         vague_group = VGroup(vague_bubble, vague_text)
-        dead_end = Text("(dead end)", font_size=12, color=MUTED, font="Sans").next_to(vague_rect, DOWN, buff=0.15)
+        dead_end = Text("(dead end)", font_size=11, color=MUTED, font="Arial").next_to(vague_rect, DOWN, buff=0.15)
 
         self.play(FadeIn(vague_group), FadeIn(dead_end), run_time=0.8)
         
         self.wait(7.7)
 
         specific_rect, specific_bubble = make_speech_bubble(
-            width=4.2, height=1.2, color=GREEN, fill_color="#ECFDF5",
+            width=4.6, height=1.4, color=GREEN, fill_color="#ECFDF5",
             position=RIGHT * 3 + DOWN * 0.8, pointer_dir="left"
         )
         specific_text = Paragraph(
             "\"Cut this section\nto two sentences\"",
-            font_size=16, color=GREEN, alignment="center", line_spacing=0.6, weight=BOLD
+            font_size=13, color=GREEN, alignment="center", line_spacing=0.6, weight=BOLD, font="Arial"
         ).move_to(specific_rect.get_center())
         specific_group = VGroup(specific_bubble, specific_text)
-        works_label = Text("(concrete target)", font_size=12, color=GREEN, font="Sans").next_to(specific_rect, DOWN, buff=0.15)
+        works_label = Text("(concrete target)", font_size=11, color=GREEN, font="Arial").next_to(specific_rect, DOWN, buff=0.15)
 
         self.play(FadeIn(specific_group), FadeIn(works_label), run_time=0.8)
         
@@ -289,7 +301,7 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 5. THE PRACTICAL VERSION (0:55-1:10, duration = 18.07s)
         # =========================================================================
-        compare_title = Text("Which path is faster?", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Sans").move_to(RIGHT * 2.2 + UP * 2.2)
+        compare_title = Text("Which path is faster?", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
         self.play(FadeIn(compare_title), run_time=0.5)
 
         # Left card: 1 perfect prompt (with shadow)
@@ -302,9 +314,10 @@ class LoopEngineering(Scene):
             stroke_color=RED, stroke_width=3,
             fill_color="#FEF2F2", fill_opacity=1
         ).move_to(LEFT * 3)
-        card1_title = Text("1 perfect prompt", font_size=18, color=RED, weight=BOLD, font="Sans").move_to(card1.get_center() + UP * 0.7)
-        card1_time = Text("10 min", font_size=32, color=RED, weight=BOLD, font="Sans").move_to(card1.get_center())
-        card1_result = Text("mediocre result", font_size=14, color=TEXT_COLOR, font="Sans").move_to(card1.get_center() + DOWN * 0.7)
+        # Standardized card text sizes for beautiful formatting
+        card1_title = Text("1 perfect prompt", font_size=16, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center() + UP * 0.7)
+        card1_time = Text("10 min", font_size=28, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center())
+        card1_result = Text("mediocre result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card1.get_center() + DOWN * 0.7)
         card1_group = VGroup(card1_shadow, card1, card1_title, card1_time, card1_result)
 
         self.play(FadeIn(card1_group, shift=UP), run_time=0.8)
@@ -321,9 +334,9 @@ class LoopEngineering(Scene):
             stroke_color=GREEN, stroke_width=3,
             fill_color="#ECFDF5", fill_opacity=1
         ).move_to(RIGHT * 3)
-        card2_title = Text("3 quick loops", font_size=18, color=GREEN, weight=BOLD, font="Sans").move_to(card2.get_center() + UP * 0.7)
-        card2_time = Text("3 min total", font_size=32, color=GREEN, weight=BOLD, font="Sans").move_to(card2.get_center())
-        card2_result = Text("sharp result", font_size=14, color=TEXT_COLOR, font="Sans").move_to(card2.get_center() + DOWN * 0.7)
+        card2_title = Text("3 quick loops", font_size=16, color=GREEN, weight=BOLD, font="Arial").move_to(card2.get_center() + UP * 0.7)
+        card2_time = Text("3 min total", font_size=28, color=GREEN, weight=BOLD, font="Arial").move_to(card2.get_center())
+        card2_result = Text("sharp result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card2.get_center() + DOWN * 0.7)
         card2_group = VGroup(card2_shadow, card2, card2_title, card2_time, card2_result)
 
         self.play(FadeIn(card2_group, shift=UP), run_time=0.8)
@@ -331,7 +344,7 @@ class LoopEngineering(Scene):
         self.wait(6.7)
 
         # Green checkmark with a soft scale and Flash animation
-        checkmark = Text("✓", font_size=48, color=GREEN, weight=BOLD, font="Sans").next_to(card2, UP, buff=0.2)
+        checkmark = Text("✓", font_size=48, color=GREEN, weight=BOLD, font="Arial").next_to(card2, UP, buff=0.2)
         self.play(
             FadeIn(checkmark, scale=1.3),
             Flash(checkmark.get_center(), color=GREEN, line_length=0.2, num_lines=8, flash_radius=0.4),
@@ -349,9 +362,9 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 6. CLOSER (1:10-1:15, duration = 5.59s)
         # =========================================================================
-        final_title = Text("Loop Engineering", font_size=44, color=GREEN, weight=BOLD, font="Sans").move_to(UP * 0.6)
-        final_vs = Text(">", font_size=40, color=MUTED, weight=BOLD, font="Sans").next_to(final_title, DOWN, buff=0.25)
-        final_subtitle = Text("Prompt Engineering", font_size=32, color=RED, weight=BOLD, font="Sans").next_to(final_vs, DOWN, buff=0.25)
+        final_title = Text("Loop Engineering", font_size=44, color=GREEN, weight=BOLD, font="Arial").move_to(UP * 0.6)
+        final_vs = Text(">", font_size=40, color=MUTED, weight=BOLD, font="Arial").next_to(final_title, DOWN, buff=0.25)
+        final_subtitle = Text("Prompt Engineering", font_size=32, color=RED, weight=BOLD, font="Arial").next_to(final_vs, DOWN, buff=0.25)
         final_card = VGroup(final_title, final_vs, final_subtitle)
 
         # Scale and center the loop diagram back first as closer transition
@@ -394,7 +407,7 @@ class LoopEngineering(Scene):
         ).scale(0.12).rotate(-PI/2).move_to(yt_icon_box.get_center())
         yt_logo = VGroup(yt_icon_box, yt_triangle)
         
-        sub_text = Text("SUBSCRIBE", font_size=24, color=WHITE, weight=BOLD, font="Sans")
+        sub_text = Text("SUBSCRIBE", font_size=24, color=WHITE, weight=BOLD, font="Arial")
         
         # Draw notification bell
         bell_body = Arc(radius=0.22, start_angle=0, angle=PI, color=WHITE, stroke_width=0, fill_color=WHITE, fill_opacity=1)
@@ -406,16 +419,16 @@ class LoopEngineering(Scene):
         sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(UP * 0.1)
         
         # --- LOWER CTA ICONS (Like, Comment, Share) ---
-        like_icon = Text("👍", font_size=28, font="Sans")
-        like_label = Text("Like", font_size=14, color=TEXT_COLOR, font="Sans").next_to(like_icon, DOWN, buff=0.15)
+        like_icon = Text("👍", font_size=28, font="Arial")
+        like_label = Text("Like", font_size=14, color=TEXT_COLOR, font="Arial").next_to(like_icon, DOWN, buff=0.15)
         like_btn = VGroup(like_icon, like_label)
         
-        comment_icon = Text("💬", font_size=28, font="Sans")
-        comment_label = Text("Comment", font_size=14, color=TEXT_COLOR, font="Sans").next_to(comment_icon, DOWN, buff=0.15)
+        comment_icon = Text("💬", font_size=28, font="Arial")
+        comment_label = Text("Comment", font_size=14, color=TEXT_COLOR, font="Arial").next_to(comment_icon, DOWN, buff=0.15)
         comment_btn = VGroup(comment_icon, comment_label)
         
-        share_icon = Text("🔗", font_size=28, font="Sans")
-        share_label = Text("Share", font_size=14, color=TEXT_COLOR, font="Sans").next_to(share_icon, DOWN, buff=0.15)
+        share_icon = Text("🔗", font_size=28, font="Arial")
+        share_label = Text("Share", font_size=14, color=TEXT_COLOR, font="Arial").next_to(share_icon, DOWN, buff=0.15)
         share_btn = VGroup(share_icon, share_label)
         
         cta_icons = VGroup(like_btn, comment_btn, share_btn).arrange(RIGHT, buff=1.2).next_to(sub_button, DOWN, buff=0.6)
@@ -443,7 +456,7 @@ class LoopEngineering(Scene):
             run_time=0.15
         )
         # Release and change to gray (SUBSCRIBED)
-        new_sub_text = Text("SUBSCRIBED", font_size=24, color="#64748B", weight=BOLD, font="Sans")
+        new_sub_text = Text("SUBSCRIBED", font_size=24, color="#64748B", weight=BOLD, font="Arial")
         self.play(
             sub_btn_box.animate.scale(1.0/0.92).set_fill(color="#E2E8F0"),
             cursor.animate.scale(1.0/0.92).shift(RIGHT * 0.02 + DOWN * 0.02),
