@@ -302,28 +302,26 @@ class LoopEngineering(Scene):
         # Bottom Caption text
         repeat_text = Text("Repeat the loop. Get better every cycle.", font_size=14, color=TEXT_COLOR, font="Arial").to_edge(DOWN, buff=0.4)
 
-        # Animate the creation of the loop
-        self.play(FadeIn(center_text), FadeIn(nodes[0]), run_time=0.5)
-        self.play(Create(loop_arrows[0]), FadeIn(nodes[1]), run_time=0.5)
+        # Animate the creation of the loop matching the narration exactly
+        self.play(FadeIn(center_text), run_time=1.0)
+        self.play(FadeIn(nodes[0]), run_time=0.8) # "write a rough prompt"
+        self.play(Create(loop_arrows[0]), FadeIn(nodes[1]), run_time=0.8) # "get a rough output"
+        self.play(Create(loop_arrows[1]), FadeIn(nodes[2]), run_time=0.8) # "look at what's wrong"
+        self.play(Create(loop_arrows[2]), FadeIn(nodes[3]), run_time=0.8) # "tell the AI exactly that"
+        self.play(Create(loop_arrows[3]), run_time=0.6) # "and repeat"
         
-        self.wait(3.0)
+        self.wait(1.5)
 
-        self.play(Create(loop_arrows[1]), FadeIn(nodes[2]), run_time=0.5)
-        self.play(Create(loop_arrows[2]), FadeIn(nodes[3]), run_time=0.5)
-        self.play(Create(loop_arrows[3]), run_time=0.5)
-        
-        # Sequentially animate a pulse traveling along the loop arrows representing active cycling
+        # Cycling flow dot animation: "Each pass gets sharper"
         flow_dot = Dot(color=BLUE, radius=0.1)
         self.play(FadeIn(flow_dot.move_to(loop_arrows[0].get_start())), run_time=0.1)
-        self.play(MoveAlongPath(flow_dot, loop_arrows[0]), run_time=0.6)
-        self.play(flow_dot.animate.set_color(GREEN), MoveAlongPath(flow_dot, loop_arrows[1]), run_time=0.6)
-        self.play(flow_dot.animate.set_color(AMBER), MoveAlongPath(flow_dot, loop_arrows[2]), run_time=0.6)
-        self.play(flow_dot.animate.set_color(PURPLE), MoveAlongPath(flow_dot, loop_arrows[3]), run_time=0.6)
-        self.play(FadeOut(flow_dot), run_time=0.25)
+        self.play(MoveAlongPath(flow_dot, loop_arrows[0]), run_time=0.5)
+        self.play(flow_dot.animate.set_color(GREEN), MoveAlongPath(flow_dot, loop_arrows[1]), run_time=0.5)
+        self.play(flow_dot.animate.set_color(AMBER), MoveAlongPath(flow_dot, loop_arrows[2]), run_time=0.5)
+        self.play(flow_dot.animate.set_color(PURPLE), MoveAlongPath(flow_dot, loop_arrows[3]), run_time=0.5)
+        self.play(FadeOut(flow_dot), run_time=0.2)
         
-        self.wait(1.75)  # 4.5 - 2.75 = 1.75s
-
-        # Pulse the loop once to show it cycling and reveal the caption
+        # Pulse and show caption: "You're not guessing... steering with feedback"
         self.play(
             *[nodes[i].animate.scale(1.1) for i in range(4)],
             FadeIn(repeat_text),
@@ -334,11 +332,13 @@ class LoopEngineering(Scene):
             run_time=0.6
         )
         
+        self.wait(3.46) # Remaining wait to align with 18.96s total scene duration
+
         # Scale and move the diagram to the left
         loop_diagram = VGroup(center_text, nodes, loop_arrows)
         self.play(loop_diagram.animate.scale(0.65).to_edge(LEFT, buff=0.8), run_time=1.0)
         
-        self.wait(6.16)
+        self.wait(2.2) # Adjusted wait to match transition timing
         
         # Silent pause at the end of Section 3
         self.wait(0.6)
@@ -348,6 +348,9 @@ class LoopEngineering(Scene):
         # =========================================================================
         why_title = Text("How Feedback Works", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
         self.play(FadeIn(why_title), run_time=0.5)
+        
+        # Pause while narrator explains that AI is bad at reading minds but great at reacting to specifics
+        self.wait(3.5)
 
         # Speech bubbles with AI robot faces next to them to show feedback impact
         vague_rect, vague_bubble = make_speech_bubble(
@@ -359,9 +362,9 @@ class LoopEngineering(Scene):
         vague_group = VGroup(vague_bubble, vague_text, robot_vague)
         dead_end = Text("(dead end)", font_size=11, color=MUTED, font="Arial").next_to(vague_rect, DOWN, buff=0.15)
 
-        self.play(FadeIn(vague_group), FadeIn(dead_end), run_time=0.8)
+        self.play(FadeIn(vague_group), FadeIn(dead_end), run_time=0.8) # "'Make it better' fails"
         
-        self.wait(7.7)
+        self.wait(3.5)
 
         specific_rect, specific_bubble = make_speech_bubble(
             width=4.6, height=1.4, color=GREEN, fill_color="#ECFDF5",
@@ -375,9 +378,9 @@ class LoopEngineering(Scene):
         specific_group = VGroup(specific_bubble, specific_text, robot_smart)
         works_label = Text("(concrete target)", font_size=11, color=GREEN, font="Arial").next_to(specific_rect, DOWN, buff=0.15)
 
-        self.play(FadeIn(specific_group), FadeIn(works_label), run_time=0.8)
+        self.play(FadeIn(specific_group), FadeIn(works_label), run_time=0.8) # "Specific instruction works"
         
-        self.wait(6.824)
+        self.wait(8.12) # remaining wait time matching 18.02s total duration
 
         self.play(
             FadeOut(vague_group), FadeOut(dead_end),
@@ -456,8 +459,6 @@ class LoopEngineering(Scene):
         self.play(FadeIn(bar_fill2_2), run_time=0.5)
         self.play(FadeIn(bar_fill2_3), run_time=0.5)
         
-        card2_group.add(bar_fill2_1, bar_fill2_2, bar_fill2_3)
-        
         self.wait(5.2)  # 6.7 - 1.5 = 5.2s
 
         # Green checkmark with a soft scale and Flash animation
@@ -470,8 +471,15 @@ class LoopEngineering(Scene):
         
         self.wait(3.472)
 
+        # Explicitly fade out all child bar fills along with cards to prevent green lines orphan bug
         self.play(
-            FadeOut(card1_group), FadeOut(card2_group), FadeOut(checkmark),
+            FadeOut(card1_group), 
+            FadeOut(card2_group), 
+            FadeOut(bar_fill1),
+            FadeOut(bar_fill2_1), 
+            FadeOut(bar_fill2_2), 
+            FadeOut(bar_fill2_3),
+            FadeOut(checkmark),
             FadeOut(compare_title),
             run_time=0.8
         )
