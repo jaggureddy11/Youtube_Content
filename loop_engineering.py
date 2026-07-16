@@ -124,7 +124,7 @@ class LoopEngineering(Scene):
             Rotate(VGroup(loop_circle, loop_arrow_head), angle=-2*PI, about_point=loop_circle.get_center(), run_time=2.5),
             rate_func=linear
         )
-        self.wait(1.74)
+        self.wait(0.94)
 
         # CRITICAL FIX: Make sure the split_line is faded out here!
         self.play(FadeOut(left_group), FadeOut(right_group), FadeOut(split_line), run_time=0.8)
