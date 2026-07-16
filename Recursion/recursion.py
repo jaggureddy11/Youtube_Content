@@ -42,31 +42,35 @@ class Recursion(Scene):
         
         self.wait(3.0)
 
-        # Spawns doll 2 (smaller version)
+        # Spawns doll 2 (smaller version) popping out from doll1's center
         doll2_shadow = RoundedRectangle(width=2.8, height=1.8, corner_radius=0.15, fill_color="#E2E8F0", fill_opacity=0.3, stroke_width=0).move_to(RIGHT * 1.5 + DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
         doll2 = RoundedRectangle(width=2.8, height=1.8, corner_radius=0.15, stroke_color=AMBER, stroke_width=2.5, fill_color=BOX_FILL, fill_opacity=1).move_to(RIGHT * 1.5 + DOWN * 0.3)
         doll2_text = Text("solve(smaller)", font_size=12, color=AMBER, weight=BOLD, font="Arial").move_to(doll2.get_center())
         doll2_group = VGroup(doll2_shadow, doll2, doll2_text)
 
+        # Animate the pop-out transition
         self.play(
-            doll1_group.animate.scale(0.85).shift(LEFT * 2.2),
-            FadeIn(doll2_group, scale=0.85, rate_func=ease_out_back),
-            run_time=0.8
+            doll1_group.animate.scale(0.8).shift(LEFT * 1.8),
+            TransformFromCopy(doll1, doll2_group),
+            run_time=0.8,
+            rate_func=ease_out_back
         )
         
         self.wait(2.0)
 
-        # Spawns doll 3 (even smaller version)
+        # Spawns doll 3 (even smaller version) popping out from doll2's center
         doll3_shadow = RoundedRectangle(width=1.9, height=1.2, corner_radius=0.1, fill_color="#E2E8F0", fill_opacity=0.3, stroke_width=0).move_to(RIGHT * 3.1 + DOWN * 0.3 + DOWN * 0.04 + RIGHT * 0.04)
         doll3 = RoundedRectangle(width=1.9, height=1.2, corner_radius=0.1, stroke_color=GREEN, stroke_width=2, fill_color=BOX_FILL, fill_opacity=1).move_to(RIGHT * 3.1 + DOWN * 0.3)
         doll3_text = Text("solve(tiny)", font_size=10, color=GREEN, weight=BOLD, font="Arial").move_to(doll3.get_center())
         doll3_group = VGroup(doll3_shadow, doll3, doll3_text)
 
+        # Animate the second pop-out transition
         self.play(
-            doll1_group.animate.scale(0.85).shift(LEFT * 1.1),
-            doll2_group.animate.scale(0.85).shift(LEFT * 0.8),
-            FadeIn(doll3_group, scale=0.85, rate_func=ease_out_back),
-            run_time=0.8
+            doll1_group.animate.scale(0.85).shift(LEFT * 1.0),
+            doll2_group.animate.scale(0.85).shift(LEFT * 0.6),
+            TransformFromCopy(doll2, doll3_group),
+            run_time=0.8,
+            rate_func=ease_out_back
         )
 
         self.wait(2.04)
@@ -83,62 +87,73 @@ class Recursion(Scene):
         # =========================================================================
         # 2. THE CORE IDEA (0:11.04-0:32.71, duration = 21.072s + 0.6s silence = 21.672s)
         # =========================================================================
-        # We will keep the staircase on screen to transition seamlessly to Section 3
-        # Left card start: (-3.25, 1.75) to (3.25, -1.75)
         stair_title = Text("The Call Stack Stacked", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(UP * 2.8)
         self.play(FadeIn(stair_title), run_time=0.6)
 
-        # Build steps
+        # Draw staircase steps building down from (-3.5, 2.0) to (3.5, -2.5)
+        # Node width 2.0, height 0.5. Clear vertical gap = 0.9 - 0.5 = 0.4 units.
+        def make_stair_node(label, pos, color=BLUE):
+            shadow = RoundedRectangle(width=2.0, height=0.5, corner_radius=0.1, fill_color="#64748B", fill_opacity=0.12, stroke_width=0).move_to(pos + DOWN * 0.04 + RIGHT * 0.04)
+            box = RoundedRectangle(width=2.0, height=0.5, corner_radius=0.1, stroke_color=color, stroke_width=2.5, fill_color=BOX_FILL, fill_opacity=1).move_to(pos)
+            text = Text(label, font_size=10, color=color, weight=BOLD, font="Arial").move_to(box.get_center())
+            return VGroup(shadow, box, text)
+
         steps_num = [5, 4, 3, 2, 1]
         stair_nodes = VGroup()
         stair_arrows = VGroup()
 
-        def make_stair_node(label, pos, color=BLUE):
-            shadow = RoundedRectangle(width=2.5, height=0.65, corner_radius=0.12, fill_color="#64748B", fill_opacity=0.12, stroke_width=0).move_to(pos + DOWN * 0.04 + RIGHT * 0.04)
-            box = RoundedRectangle(width=2.5, height=0.65, corner_radius=0.12, stroke_color=color, stroke_width=2, fill_color=BOX_FILL, fill_opacity=1).move_to(pos)
-            text = Text(label, font_size=12, color=color, weight=BOLD, font="Arial").move_to(box.get_center())
-            return VGroup(shadow, box, text)
-
-        start_pos = LEFT * 3.4 + UP * 1.8
         for i, n in enumerate(steps_num):
-            pos = start_pos + i * (RIGHT * 1.25 + DOWN * 0.72)
+            pos = np.array([-3.5 + i * 1.4, 2.0 - i * 0.9, 0])
             node = make_stair_node(f"countdown({n})", pos, BLUE)
             stair_nodes.add(node)
             if i > 0:
-                prev_pos = stair_nodes[i-1][1].get_bottom() + RIGHT * 0.2
-                curr_pos = node[1].get_left() + UP * 0.1
-                arrow = CurvedArrow(prev_pos, curr_pos, angle=-TAU/12, color=MUTED, stroke_width=2.0)
+                p1 = stair_nodes[i-1][1].get_bottom() + RIGHT * 0.3
+                p2 = node[1].get_top() + LEFT * 0.3
+                arrow = CurvedArrow(p1, p2, angle=-TAU/8, color=MUTED, stroke_width=2.0)
                 stair_arrows.add(arrow)
 
-        # Animate step-by-step diagonal staircase
+        # Animate descent step-by-step with energy flow dots
         self.play(FadeIn(stair_nodes[0], scale=0.9, rate_func=ease_out_back), run_time=0.8)
         self.wait(4.0)
 
-        self.play(Create(stair_arrows[0]), FadeIn(stair_nodes[1], scale=0.9, rate_func=ease_out_back), run_time=0.8)
-        self.wait(3.0)
+        # Step 1
+        flow_dot1 = Dot(color=BLUE, radius=0.08).move_to(stair_arrows[0].get_start())
+        self.play(Create(stair_arrows[0]), run_time=0.4)
+        self.play(MoveAlongPath(flow_dot1, stair_arrows[0]), run_time=0.3)
+        self.play(FadeOut(flow_dot1), FadeIn(stair_nodes[1], scale=0.9, rate_func=ease_out_back), run_time=0.4)
+        self.wait(2.7) # Adjusted for timings
 
-        self.play(Create(stair_arrows[1]), FadeIn(stair_nodes[2], scale=0.9, rate_func=ease_out_back), run_time=0.8)
-        self.wait(3.0)
+        # Step 2
+        flow_dot2 = Dot(color=BLUE, radius=0.08).move_to(stair_arrows[1].get_start())
+        self.play(Create(stair_arrows[1]), run_time=0.4)
+        self.play(MoveAlongPath(flow_dot2, stair_arrows[1]), run_time=0.3)
+        self.play(FadeOut(flow_dot2), FadeIn(stair_nodes[2], scale=0.9, rate_func=ease_out_back), run_time=0.4)
+        self.wait(2.7)
 
-        self.play(
-            Create(stair_arrows[2]), FadeIn(stair_nodes[3], scale=0.9, rate_func=ease_out_back),
-            Create(stair_arrows[3]), FadeIn(stair_nodes[4], scale=0.9, rate_func=ease_out_back),
-            run_time=1.1
-        )
+        # Step 3 and 4 popping in sequentially
+        flow_dot3 = Dot(color=BLUE, radius=0.08).move_to(stair_arrows[2].get_start())
+        self.play(Create(stair_arrows[2]), run_time=0.3)
+        self.play(MoveAlongPath(flow_dot3, stair_arrows[2]), run_time=0.25)
+        self.play(FadeOut(flow_dot3), FadeIn(stair_nodes[3], scale=0.9, rate_func=ease_out_back), run_time=0.35)
+
+        flow_dot4 = Dot(color=BLUE, radius=0.08).move_to(stair_arrows[3].get_start())
+        self.play(Create(stair_arrows[3]), run_time=0.3)
+        self.play(MoveAlongPath(flow_dot4, stair_arrows[3]), run_time=0.25)
+        self.play(FadeOut(flow_dot4), FadeIn(stair_nodes[4], scale=0.9, rate_func=ease_out_back), run_time=0.35)
 
         self.wait(7.572)
 
         # =========================================================================
         # 3. THE BASE CASE (0:32.71-0:48.69, duration = 15.384s + 0.6s silence = 15.984s)
         # =========================================================================
-        # Spawn the final base case: countdown(0) in GREEN with STOP badge
-        base_pos = start_pos + 5 * (RIGHT * 1.25 + DOWN * 0.72)
+        # Spawn the final base case: countdown(0) in GREEN with STOP badge and green Flash
+        base_pos = np.array([-3.5 + 5 * 1.4, 2.0 - 5 * 0.9, 0])
         base_node = make_stair_node("countdown(0)", base_pos, GREEN)
         
         arrow_base = CurvedArrow(
-            stair_nodes[4][1].get_bottom() + RIGHT * 0.2, 
-            base_node[1].get_left() + UP * 0.1, 
-            angle=-TAU/12, color=MUTED, stroke_width=2.0
+            stair_nodes[4][1].get_bottom() + RIGHT * 0.3, 
+            base_node[1].get_top() + LEFT * 0.3, 
+            angle=-TAU/8, color=MUTED, stroke_width=2.0
         )
 
         stop_badge_shadow = RoundedRectangle(width=0.8, height=0.35, corner_radius=0.08, fill_color="#64748B", fill_opacity=0.12, stroke_width=0).next_to(base_node[1], RIGHT, buff=0.12).shift(DOWN * 0.03 + RIGHT * 0.03)
@@ -148,7 +163,16 @@ class Recursion(Scene):
 
         self.wait(4.0)
 
-        self.play(Create(arrow_base), FadeIn(base_node, scale=0.9, rate_func=ease_out_back), run_time=0.8)
+        # Energy flow dot for base case
+        flow_dot_base = Dot(color=BLUE, radius=0.08).move_to(arrow_base.get_start())
+        self.play(Create(arrow_base), run_time=0.4)
+        self.play(MoveAlongPath(flow_dot_base, arrow_base), run_time=0.3)
+        self.play(
+            FadeOut(flow_dot_base),
+            FadeIn(base_node, scale=0.9, rate_func=ease_out_back),
+            Flash(base_node[1].get_center(), color=GREEN, line_length=0.2, flash_radius=0.4),
+            run_time=0.4
+        )
         
         self.wait(3.0)
 
@@ -164,28 +188,29 @@ class Recursion(Scene):
         # 4. HOW IT UNWINDS (0:48.69-1:07.31, duration = 18.024s + 0.6s silence = 18.624s)
         # =========================================================================
         # Visualizing the stack unwinding bottom-to-top by lighting them up in AMBER
-        unwind_arrows = VGroup(arrow_base, stair_arrows[3], stair_arrows[2], stair_arrows[1], stair_arrows[0])
-        unwind_nodes = VGroup(stair_nodes[4], stair_nodes[3], stair_nodes[2], stair_nodes[1], stair_nodes[0])
+        unwind_arrows = [arrow_base, stair_arrows[3], stair_arrows[2], stair_arrows[1], stair_arrows[0]]
+        unwind_nodes = [stair_nodes[4], stair_nodes[3], stair_nodes[2], stair_nodes[1], stair_nodes[0]]
 
         self.wait(2.0)
 
-        # Step-by-step unwinding sequence
+        # Step-by-step unwinding sequence moving in reverse (upwards)
         for i in range(5):
             arr = unwind_arrows[i]
             node = unwind_nodes[i]
             
-            # Animate the energy return dot traveling back up the arrow
+            # Dot travels BACKWARDS along the arrow path (from end to start)
             ret_dot = Dot(color=AMBER, radius=0.08).move_to(arr.get_end())
             self.play(
-                MoveAlongPath(ret_dot, arr, rate_func=linear), 
+                MoveAlongPath(ret_dot, arr, rate_func=lambda t: 1 - t), 
                 run_time=0.4
             )
             
-            # Turn the parent node AMBER
+            # Turn the parent node AMBER with a soft flash
             amber_node = make_stair_node(node[2].text, node[1].get_center(), AMBER)
             self.play(
                 FadeOut(ret_dot),
                 Transform(node, amber_node),
+                Flash(node[1].get_center(), color=AMBER, line_length=0.15, flash_radius=0.3),
                 run_time=0.2
             )
 
@@ -243,30 +268,57 @@ class Recursion(Scene):
 
         self.wait(4.0)
 
-        # Right: stack overflow card with warning
-        overflow_shadow = RoundedRectangle(width=4.0, height=2.2, corner_radius=0.2, fill_color="#64748B", fill_opacity=0.12, stroke_width=0).move_to(RIGHT * 2.8 + DOWN * 0.08 + RIGHT * 0.08)
-        overflow_card = RoundedRectangle(width=4.0, height=2.2, corner_radius=0.2, stroke_color=RED, stroke_width=3, fill_color="#FEF2F2", fill_opacity=1).move_to(RIGHT * 2.8)
-        overflow_title = Text("STACK OVERFLOW", font_size=18, color=RED, weight=BOLD, font="Arial").move_to(overflow_card.get_center() + UP * 0.5)
-        overflow_icon = Text("⚠️", font_size=28).move_to(overflow_card.get_center() + DOWN * 0.4)
-        overflow_group = VGroup(overflow_shadow, overflow_card, overflow_title, overflow_icon)
+        # Stacking 6 red boxes vertically on the right to visualize stack overflow piling up
+        stack_boxes = VGroup()
+        for j in range(6):
+            stack_pos = RIGHT * 2.8 + (DOWN * 2.0 + j * 0.72)
+            stack_box_shadow = RoundedRectangle(width=3.0, height=0.5, corner_radius=0.1, fill_color="#64748B", fill_opacity=0.12, stroke_width=0).move_to(stack_pos + DOWN * 0.04 + RIGHT * 0.04)
+            stack_box = RoundedRectangle(width=3.0, height=0.5, corner_radius=0.1, stroke_color=RED, stroke_width=2, fill_color="#FEF2F2", fill_opacity=1).move_to(stack_pos)
+            stack_text = Text(f"countdown({5-j})", font_size=11, color=RED, weight=BOLD, font="Arial").move_to(stack_box.get_center())
+            stack_boxes.add(VGroup(stack_box_shadow, stack_box, stack_text))
+
+        # Pile them up rapidly
+        for j in range(6):
+            self.play(
+                FadeIn(stack_boxes[j], shift=UP * 0.4, scale=0.9, rate_func=ease_out_back),
+                run_time=0.15
+            )
+
+        # Play a visual shake & red Flash on overflow
+        self.play(
+            stack_boxes.animate.shift(LEFT * 0.1),
+            err_group.animate.shift(LEFT * 0.05),
+            rate_func=there_and_back,
+            run_time=0.12
+        )
+        self.play(
+            stack_boxes.animate.shift(RIGHT * 0.1),
+            err_group.animate.shift(RIGHT * 0.05),
+            rate_func=there_and_back,
+            run_time=0.12
+        )
+
+        # STACK OVERFLOW badge flashes over the pile
+        overflow_shadow = RoundedRectangle(width=4.2, height=1.6, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(RIGHT * 2.8 + DOWN * 0.05 + RIGHT * 0.05)
+        overflow_card = RoundedRectangle(width=4.2, height=1.6, corner_radius=0.15, stroke_color=RED, stroke_width=3, fill_color="#FEF2F2", fill_opacity=1).move_to(RIGHT * 2.8)
+        overflow_title = Text("STACK OVERFLOW", font_size=16, color=RED, weight=BOLD, font="Arial").move_to(overflow_card.get_center() + UP * 0.3)
+        overflow_sub = Text("out of memory error", font_size=11, color=TEXT_COLOR, font="Arial").move_to(overflow_card.get_center() + DOWN * 0.3)
+        overflow_badge = VGroup(overflow_shadow, overflow_card, overflow_title, overflow_sub)
 
         self.play(
-            FadeIn(overflow_group, scale=0.92, rate_func=ease_out_back),
-            Flash(overflow_card.get_center(), color=RED, line_length=0.2, flash_radius=0.5),
-            run_time=0.8
+            FadeIn(overflow_badge, scale=0.92, rate_func=ease_out_back),
+            Flash(overflow_card.get_center(), color=RED, line_length=0.25, flash_radius=0.5),
+            run_time=0.6
         )
-        
-        # Shake effect on collision
-        self.play(overflow_group.animate.shift(LEFT * 0.1), rate_func=there_and_back, run_time=0.15)
-        self.play(overflow_group.animate.shift(RIGHT * 0.1), rate_func=there_and_back, run_time=0.15)
 
-        self.wait(5.49) # 5.640 - 0.15 = 5.49s
+        self.wait(4.7) # Adjusted for timings
 
         self.play(
             FadeOut(rule_title),
             FadeOut(err_group),
             FadeOut(loop_arrow),
-            FadeOut(overflow_group),
+            FadeOut(stack_boxes),
+            FadeOut(overflow_badge),
             run_time=0.8
         )
         self.wait(0.6)
@@ -274,10 +326,30 @@ class Recursion(Scene):
         # =========================================================================
         # 6. CLOSER (1:20.15-1:29.10, duration = 8.352s + 0.6s silence = 8.952s)
         # =========================================================================
-        final_title = Text("Recursion", font_size=44, color=BLUE, weight=BOLD, font="Arial").move_to(UP * 0.6)
-        final_vs = Text("•", font_size=40, color=MUTED, weight=BOLD, font="Arial").next_to(final_title, DOWN, buff=0.25)
-        final_subtitle = Text("Explained.", font_size=32, color=GREEN, weight=BOLD, font="Arial").next_to(final_vs, DOWN, buff=0.25)
-        final_card = VGroup(final_title, final_vs, final_subtitle)
+        # Premium Dashboard Card summary
+        card_shadow = RoundedRectangle(width=8.5, height=4.2, corner_radius=0.25, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.1 + DOWN * 0.08 + RIGHT * 0.08)
+        card_bg = RoundedRectangle(width=8.5, height=4.2, corner_radius=0.25, stroke_color=BLUE, stroke_width=3.5, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.1)
+        card_title = Text("Recursion: The Three Rules", font_size=20, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(card_bg.get_center() + UP * 1.5)
+        
+        # Rule rows
+        r1_pill = RoundedRectangle(width=1.8, height=0.45, corner_radius=0.08, stroke_width=0, fill_color="#EFF6FF", fill_opacity=1).move_to(card_bg.get_center() + LEFT * 2.5 + UP * 0.6)
+        r1_label = Text("1. DIVIDE", font_size=11, color=BLUE, weight=BOLD, font="Arial").move_to(r1_pill.get_center())
+        r1_desc = Text("Solve a smaller version of the same problem.", font_size=12, color=TEXT_COLOR, font="Arial").next_to(r1_pill, RIGHT, buff=0.4)
+        
+        r2_pill = RoundedRectangle(width=1.8, height=0.45, corner_radius=0.08, stroke_width=0, fill_color="#ECFDF5", fill_opacity=1).move_to(card_bg.get_center() + LEFT * 2.5 + DOWN * 0.1)
+        r2_label = Text("2. STOP", font_size=11, color=GREEN, weight=BOLD, font="Arial").move_to(r2_pill.get_center())
+        r2_desc = Text("Define a base case to halt recursion cleanly.", font_size=12, color=TEXT_COLOR, font="Arial").next_to(r2_pill, RIGHT, buff=0.4)
+        
+        r3_pill = RoundedRectangle(width=1.8, height=0.45, corner_radius=0.08, stroke_width=0, fill_color="#FEF3C7", fill_opacity=1).move_to(card_bg.get_center() + LEFT * 2.5 + DOWN * 0.8)
+        r3_label = Text("3. UNWIND", font_size=11, color=AMBER, weight=BOLD, font="Arial").move_to(r3_pill.get_center())
+        r3_desc = Text("Let the answers build back up the call stack.", font_size=12, color=TEXT_COLOR, font="Arial").next_to(r3_pill, RIGHT, buff=0.4)
+        
+        final_card = VGroup(
+            card_shadow, card_bg, card_title,
+            r1_pill, r1_label, r1_desc,
+            r2_pill, r2_label, r2_desc,
+            r3_pill, r3_label, r3_desc
+        )
 
         self.play(
             FadeIn(final_card, scale=0.85, rate_func=ease_out_back),
@@ -286,7 +358,7 @@ class Recursion(Scene):
         self.wait(7.152)
 
         # =========================================================================
-        # 7. CALL TO ACTION (CTA) (1:29.10-1:36.59, duration = 7.488s) - PREMIUM YOUTUBE OUTRO
+        # 7. CALL TO ACTION (CTA) (1:29.10-1:36.59, duration = 7.488s)
         # =========================================================================
         # Slide final card up and scale down
         self.play(final_card.animate.to_edge(UP, buff=0.5).scale(0.75), run_time=0.8)
@@ -307,7 +379,7 @@ class Recursion(Scene):
         sub_button_contents = VGroup(yt_logo, sub_text, bell_icon).arrange(RIGHT, buff=0.4)
         sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(DOWN * 0.1)
 
-        # --- LOWER CTA ICONS (Like, Comment, Share) ---
+        # --- LOWER CTA ICONS ---
         like_icon = Text("👍", font_size=28)
         like_label = Text("Like", font_size=14, color=TEXT_COLOR, font="Arial").next_to(like_icon, DOWN, buff=0.15)
         like_btn = VGroup(like_icon, like_label)
