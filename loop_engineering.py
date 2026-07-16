@@ -108,7 +108,6 @@ class LoopEngineering(Scene):
             loop_circle.point_at_angle(PI / 2)
         ).rotate(-PI / 2)
         loop_label = Text("Loop Engineering", font_size=14, color=GREEN, weight=BOLD, font="Arial").next_to(loop_circle, UP, buff=0.2)
-        # Avoid specifying font="Arial" for Emojis to let them fallback to system emoji fonts correctly
         calm_brain = Text("🧠", font_size=28).move_to(loop_circle.get_center())
         right_group = VGroup(loop_circle, loop_arrow_head, calm_brain, loop_label)
 
@@ -158,7 +157,6 @@ class LoopEngineering(Scene):
             fill_color=BOX_FILL, fill_opacity=1
         ).shift(RIGHT * 2.2 + UP * 0.5)
         
-        # PROPER TEXT FIX: Added font="Arial" and font_size=16 for optimal padding
         output_text = Text("Output", font_size=16, color=TEXT_COLOR, font="Arial").move_to(output_box.get_center())
         output_group = VGroup(output_shadow, output_box, output_text)
 
@@ -183,7 +181,7 @@ class LoopEngineering(Scene):
         self.play(output_group.animate.shift(LEFT * 0.1), rate_func=there_and_back, run_time=0.15)
         self.play(output_group.animate.shift(RIGHT * 0.1), rate_func=there_and_back, run_time=0.15)
         
-        self.wait(6.93)
+        self.wait(6.932)
 
         self.play(
             FadeOut(prompt_group), FadeOut(arrow1), FadeOut(output_group), 
@@ -194,66 +192,122 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 3. THE LOOP: WHAT IT ACTUALLY LOOKS LIKE (0:28.87-0:47.23, duration = 18.36s)
         # =========================================================================
-        # 4 nodes arranged in a circle
-        radius = 2.2
-        node_labels = ["Prompt", "Output", "Review", "Refine"]
-        node_colors = [BLUE, MUTED, AMBER, GREEN]
-        angles = [PI/2, 0, -PI/2, PI]  # top, right, bottom, left
+        # Palette matching the uploaded diagram
+        BLUE_ACCENT = "#3B82F6"
+        GREEN_ACCENT = "#10B981"
+        AMBER_ACCENT = "#F59E0B"
+        PURPLE_ACCENT = "#8B5CF6"
+        
+        LIGHT_BLUE = "#DBEAFE"
+        LIGHT_GREEN = "#D1FAE5"
+        LIGHT_AMBER = "#FEF3C7"
+        LIGHT_PURPLE = "#F3E8FF"
 
-        nodes = VGroup()
-        node_texts = VGroup()
-        node_shadows = VGroup()
-        for label, color, angle in zip(node_labels, node_colors, angles):
-            pos = radius * np.array([np.cos(angle), np.sin(angle), 0])
+        # Simple vector icons matching the diagram
+        # 1. Checklist
+        chk_box = Rectangle(width=0.22, height=0.32, stroke_width=1.5, stroke_color=MUTED)
+        chk_lines = VGroup(*[Line(start=chk_box.get_center()+LEFT*0.05+UP*y, end=chk_box.get_center()+RIGHT*0.05+UP*y, stroke_width=1.2, color=MUTED) for y in [0.07, 0, -0.07]])
+        chk_dots = VGroup(*[Dot(point=chk_box.get_center()+LEFT*0.07+UP*y, radius=0.015, color=MUTED) for y in [0.07, 0, -0.07]])
+        icon_plan = VGroup(chk_box, chk_lines, chk_dots)
+
+        # 2. Gear
+        gear_center = Circle(radius=0.08, stroke_width=1.5, stroke_color=MUTED)
+        gear_outer = Circle(radius=0.14, stroke_width=1.5, stroke_color=MUTED)
+        teeth = VGroup(*[
+            Rectangle(width=0.04, height=0.06, stroke_width=0, fill_color=MUTED, fill_opacity=1)
+            .move_to(gear_outer.point_at_angle(a)).rotate(a)
+            for a in np.arange(0, 2*PI, PI/4)
+        ])
+        icon_act = VGroup(gear_center, gear_outer, teeth)
+
+        # 3. Magnifying glass
+        glass_circle = Circle(radius=0.1, stroke_width=1.5, stroke_color=MUTED)
+        handle = Line(start=glass_circle.point_at_angle(-PI/4), end=glass_circle.point_at_angle(-PI/4) + DOWN*0.12 + RIGHT*0.12, stroke_width=2.5, color=MUTED)
+        icon_observe = VGroup(glass_circle, handle)
+
+        # 4. Bar chart
+        bar1 = Rectangle(width=0.05, height=0.12, stroke_width=0, fill_color=MUTED, fill_opacity=1)
+        bar2 = Rectangle(width=0.05, height=0.22, stroke_width=0, fill_color=MUTED, fill_opacity=1).next_to(bar1, RIGHT, buff=0.04, aligned_edge=DOWN)
+        bar3 = Rectangle(width=0.05, height=0.32, stroke_width=0, fill_color=MUTED, fill_opacity=1).next_to(bar2, RIGHT, buff=0.04, aligned_edge=DOWN)
+        icon_evaluate = VGroup(bar1, bar2, bar3)
+
+        # Center Text
+        center_title = Text("LOOP ENGINEERING", font_size=16, color=TEXT_COLOR, weight=BOLD, font="Arial")
+        underline = Line(start=center_title.get_left()+DOWN*0.08, end=center_title.get_right()+DOWN*0.08, color=TEXT_COLOR, stroke_width=1.5)
+        center_subtitle = Paragraph(
+            "Design AI systems\nthat think, act, learn\nand improve in loops.",
+            font_size=10, color=MUTED, alignment="center", font="Arial", line_spacing=0.55
+        ).next_to(underline, DOWN, buff=0.12)
+        center_text = VGroup(center_title, underline, center_subtitle).move_to(ORIGIN)
+
+        # Helper to construct a beautiful loop node box
+        def make_loop_node(title, body, color, light_color, icon, position):
             shadow = RoundedRectangle(
-                width=1.8, height=0.9, corner_radius=0.15,
+                width=2.8, height=1.4, corner_radius=0.15,
                 fill_color="#64748B", fill_opacity=0.15, stroke_width=0
-            ).move_to(pos + DOWN * 0.06 + RIGHT * 0.06)
-            node = RoundedRectangle(
-                width=1.8, height=0.9, corner_radius=0.15,
-                stroke_color=color, stroke_width=3,
+            ).move_to(position + DOWN * 0.06 + RIGHT * 0.06)
+            box = RoundedRectangle(
+                width=2.8, height=1.4, corner_radius=0.15,
+                stroke_color=color, stroke_width=2.5,
                 fill_color=BOX_FILL, fill_opacity=1
-            ).move_to(pos)
-            # Reduced font_size to 14 for beautiful box padding
-            text = Text(label, font_size=14, color=color, weight=BOLD, font="Arial").move_to(pos)
-            nodes.add(node)
-            node_texts.add(text)
-            node_shadows.add(shadow)
+            ).move_to(position)
+            
+            pill = RoundedRectangle(width=1.3, height=0.32, corner_radius=0.06, stroke_width=0, fill_color=light_color, fill_opacity=1)
+            title_text = Text(title, font_size=10, color=color, weight=BOLD, font="Arial").move_to(pill.get_center())
+            pill_group = VGroup(pill, title_text)
+            
+            body_text = Paragraph(body, font_size=9, color=TEXT_COLOR, alignment="center", font="Arial", line_spacing=0.5)
+            text_group = VGroup(pill_group, body_text).arrange(DOWN, buff=0.08)
+            
+            contents = VGroup(icon, text_group).arrange(RIGHT, buff=0.18).move_to(box.get_center())
+            node_group = VGroup(shadow, box, contents)
+            return node_group
 
-        # Circular connecting arrows between consecutive nodes
-        loop_arrows = VGroup()
-        for i in range(4):
-            start_node = nodes[i]
-            end_node = nodes[(i + 1) % 4]
-            arrow = CurvedArrow(
-                start_node.get_center() + 0.9 * (end_node.get_center() - start_node.get_center()) / np.linalg.norm(end_node.get_center() - start_node.get_center()),
-                end_node.get_center() - 0.9 * (end_node.get_center() - start_node.get_center()) / np.linalg.norm(end_node.get_center() - start_node.get_center()),
-                color=BOX_BORDER, angle=-TAU/8
-            )
-            loop_arrows.add(arrow)
+        # Build nodes
+        nodes = VGroup(
+            make_loop_node("1. PLAN", "AI decides what\nto do next.", BLUE_ACCENT, LIGHT_BLUE, icon_plan, UP * 2.5),
+            make_loop_node("2. ACT", "AI executes\nthe action.", GREEN_ACCENT, LIGHT_GREEN, icon_act, RIGHT * 2.8),
+            make_loop_node("3. OBSERVE", "AI observes results\nand collects data.", AMBER_ACCENT, LIGHT_AMBER, icon_observe, DOWN * 2.5),
+            make_loop_node("4. EVALUATE", "AI evaluates outcomes\nand decides what to improve.", PURPLE_ACCENT, LIGHT_PURPLE, icon_evaluate, LEFT * 2.8)
+        )
+
+        # Arrows connecting the boxes
+        loop_arrows = VGroup(
+            CurvedArrow(nodes[0].get_right() + DOWN * 0.1, nodes[1].get_top() + RIGHT * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2),
+            CurvedArrow(nodes[1].get_bottom() + RIGHT * 0.1, nodes[2].get_right() + UP * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2),
+            CurvedArrow(nodes[2].get_left() + UP * 0.1, nodes[3].get_bottom() + LEFT * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2),
+            CurvedArrow(nodes[3].get_top() + LEFT * 0.1, nodes[0].get_left() + DOWN * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2)
+        )
+
+        # Bottom Caption text
+        repeat_text = Text("Repeat the loop. Get better every cycle.", font_size=14, color=TEXT_COLOR, font="Arial").to_edge(DOWN, buff=0.4)
 
         # Animate the creation of the loop
-        self.play(FadeIn(node_shadows[0]), FadeIn(nodes[0]), FadeIn(node_texts[0]), run_time=0.5)
-        self.play(Create(loop_arrows[0]), FadeIn(node_shadows[1]), FadeIn(nodes[1]), FadeIn(node_texts[1]), run_time=0.5)
+        self.play(FadeIn(center_text), FadeIn(nodes[0]), run_time=0.5)
+        self.play(Create(loop_arrows[0]), FadeIn(nodes[1]), run_time=0.5)
         
         self.wait(3.0)
 
-        self.play(Create(loop_arrows[1]), FadeIn(node_shadows[2]), FadeIn(nodes[2]), FadeIn(node_texts[2]), run_time=0.5)
-        self.play(Create(loop_arrows[2]), FadeIn(node_shadows[3]), FadeIn(nodes[3]), FadeIn(node_texts[3]), run_time=0.5)
+        self.play(Create(loop_arrows[1]), FadeIn(nodes[2]), run_time=0.5)
+        self.play(Create(loop_arrows[2]), FadeIn(nodes[3]), run_time=0.5)
         self.play(Create(loop_arrows[3]), run_time=0.5)
         
         self.wait(4.5)
 
-        # Pulse the loop once to show it cycling
+        # Pulse the loop once to show it cycling and reveal the caption
         self.play(
-            *[nodes[i].animate.scale(1.15) for i in range(4)],
-            *[node_shadows[i].animate.scale(1.15) for i in range(4)],
-            rate_func=there_and_back,
-            run_time=1.2
+            *[nodes[i].animate.scale(1.1) for i in range(4)],
+            FadeIn(repeat_text),
+            run_time=0.6
+        )
+        self.play(
+            *[nodes[i].animate.scale(1.0/1.1) for i in range(4)],
+            run_time=0.6
         )
         
-        loop_diagram = VGroup(node_shadows, nodes, node_texts, loop_arrows)
-        self.play(loop_diagram.animate.scale(0.7).to_edge(LEFT, buff=1.0), run_time=1.0)
+        # Scale and move the diagram to the left
+        loop_diagram = VGroup(center_text, nodes, loop_arrows)
+        self.play(loop_diagram.animate.scale(0.65).to_edge(LEFT, buff=0.8), run_time=1.0)
         
         self.wait(6.16)
 
@@ -289,12 +343,12 @@ class LoopEngineering(Scene):
 
         self.play(FadeIn(specific_group), FadeIn(works_label), run_time=0.8)
         
-        self.wait(6.82)
+        self.wait(6.824)
 
         self.play(
             FadeOut(vague_group), FadeOut(dead_end),
             FadeOut(specific_group), FadeOut(works_label),
-            FadeOut(loop_diagram),
+            FadeOut(loop_diagram), FadeOut(repeat_text),
             FadeOut(why_title),
             run_time=0.8
         )
@@ -315,7 +369,6 @@ class LoopEngineering(Scene):
             stroke_color=RED, stroke_width=3,
             fill_color="#FEF2F2", fill_opacity=1
         ).move_to(LEFT * 3)
-        # Standardized card text sizes for beautiful formatting
         card1_title = Text("1 perfect prompt", font_size=16, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center() + UP * 0.7)
         card1_time = Text("10 min", font_size=28, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center())
         card1_result = Text("mediocre result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card1.get_center() + DOWN * 0.7)
@@ -352,7 +405,7 @@ class LoopEngineering(Scene):
             run_time=0.8
         )
         
-        self.wait(3.47)
+        self.wait(3.472)
 
         self.play(
             FadeOut(card1_group), FadeOut(card2_group), FadeOut(checkmark),
@@ -368,9 +421,10 @@ class LoopEngineering(Scene):
         final_subtitle = Text("Prompt Engineering", font_size=32, color=RED, weight=BOLD, font="Arial").next_to(final_vs, DOWN, buff=0.25)
         final_card = VGroup(final_title, final_vs, final_subtitle)
 
-        # Scale and center the loop diagram back first as closer transition
+        # Scale and center the loop diagram back first as closer transition, fading it back in
         self.play(
-            loop_diagram.animate.scale(1.0/0.7).move_to(UP * 0.4),
+            loop_diagram.animate.scale(1.0/0.65).move_to(UP * 0.4),
+            FadeIn(loop_diagram),
             run_time=1.0
         )
         self.play(
@@ -384,7 +438,7 @@ class LoopEngineering(Scene):
             FadeIn(final_card, scale=0.85),
             run_time=1.2
         )
-        self.wait(2.19)
+        self.wait(2.192)
 
         # =========================================================================
         # 7. CALL TO ACTION (CTA) (1:15-1:22, duration = 7.49s) - PREMIUM YOUTUBE OUTRO
@@ -533,4 +587,4 @@ class LoopEngineering(Scene):
             FadeOut(cursor),
             run_time=0.4
         )
-        self.wait(1.19)
+        self.wait(1.188)
