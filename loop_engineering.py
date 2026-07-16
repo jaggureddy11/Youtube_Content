@@ -1,4 +1,5 @@
 from manim import *
+from manim.utils.rate_functions import ease_out_back
 
 class LoopEngineering(Scene):
     def construct(self):
@@ -396,8 +397,8 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 5. THE PRACTICAL VERSION (1:06.45-1:24.52, duration = 18.07s + 0.6s silence = 18.67s)
         # =========================================================================
-        compare_title = Text("Which path is faster?", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
-        self.play(FadeIn(compare_title), run_time=0.5)
+        compare_title = Text("Which path is faster?", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(UP * 2.2)
+        self.play(FadeIn(compare_title, shift=DOWN * 0.3, rate_func=ease_out_back), run_time=0.6)
 
         # Left card: 1 perfect prompt (with shadow and red visual timeline bar)
         card1_shadow = RoundedRectangle(
@@ -418,7 +419,7 @@ class LoopEngineering(Scene):
         
         card1_group = VGroup(card1_shadow, card1, card1_title, card1_time, card1_result, bar_bg1, bar_fill1)
 
-        self.play(FadeIn(card1_group, shift=UP), run_time=0.8)
+        self.play(FadeIn(card1_group, shift=UP * 0.4, scale=0.92, rate_func=ease_out_back), run_time=0.8)
         
         # Slow loading bar for card 1 (representing the 10 min build time)
         self.play(
@@ -452,24 +453,24 @@ class LoopEngineering(Scene):
         
         card2_group = VGroup(card2_shadow, card2, card2_title, card2_time, card2_result, bar_bg2_1, bar_bg2_2, bar_bg2_3)
 
-        self.play(FadeIn(card2_group, shift=UP), run_time=0.8)
+        self.play(FadeIn(card2_group, shift=UP * 0.4, scale=0.92, rate_func=ease_out_back), run_time=0.8)
         
         # Segmented fast loading bars popping in sequentially (representing fast feedback cycles)
-        self.play(FadeIn(bar_fill2_1), run_time=0.5)
-        self.play(FadeIn(bar_fill2_2), run_time=0.5)
-        self.play(FadeIn(bar_fill2_3), run_time=0.5)
+        self.play(FadeIn(bar_fill2_1, scale=0.8, rate_func=ease_out_back), run_time=0.5)
+        self.play(FadeIn(bar_fill2_2, scale=0.8, rate_func=ease_out_back), run_time=0.5)
+        self.play(FadeIn(bar_fill2_3, scale=0.8, rate_func=ease_out_back), run_time=0.5)
         
         self.wait(5.2)  # 6.7 - 1.5 = 5.2s
 
         # Green checkmark with a soft scale and Flash animation
         checkmark = Text("✓", font_size=48, color=GREEN, weight=BOLD, font="Arial").next_to(card2, UP, buff=0.2)
         self.play(
-            FadeIn(checkmark, scale=1.3),
+            FadeIn(checkmark, scale=1.5, rate_func=ease_out_back),
             Flash(checkmark.get_center(), color=GREEN, line_length=0.2, num_lines=8, flash_radius=0.4),
             run_time=0.8
         )
         
-        self.wait(3.472)
+        self.wait(3.372) # Reduced slightly (from 3.472) to account for compare_title transition duration change (0.5s to 0.6s)
 
         # Explicitly fade out all child bar fills along with cards to prevent green lines orphan bug
         self.play(
