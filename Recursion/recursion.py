@@ -370,8 +370,8 @@ class Recursion(Scene):
         # =========================================================================
         # 7. CALL TO ACTION (CTA) (1:29.10-1:36.59, duration = 7.488s)
         # =========================================================================
-        # Slide final card up and scale down
-        self.play(final_card.animate.to_edge(UP, buff=0.5).scale(0.75), run_time=0.8)
+        # Slide final card up and scale down to 0.62 to prevent overlap
+        self.play(final_card.animate.to_edge(UP, buff=0.45).scale(0.62), run_time=0.8)
 
         # --- SUBSCRIBE BUTTON ---
         sub_btn_box = RoundedRectangle(width=5.5, height=1.1, corner_radius=0.15, stroke_width=0, fill_color=RED, fill_opacity=1)
@@ -387,7 +387,8 @@ class Recursion(Scene):
         bell_icon = VGroup(bell_body, bell_base, bell_clapper)
         
         sub_button_contents = VGroup(yt_logo, sub_text, bell_icon).arrange(RIGHT, buff=0.4)
-        sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(DOWN * 0.1)
+        # Shift button down to DOWN * 0.95 for clean spacing
+        sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(DOWN * 0.95)
 
         # --- LOWER CTA ICONS ---
         like_icon = Text("👍", font_size=28)
@@ -402,7 +403,7 @@ class Recursion(Scene):
         share_label = Text("Share", font_size=14, color=TEXT_COLOR, font="Arial").next_to(share_icon, DOWN, buff=0.15)
         share_btn = VGroup(share_icon, share_label)
         
-        cta_icons = VGroup(like_btn, comment_btn, share_btn).arrange(RIGHT, buff=1.2).next_to(sub_button, DOWN, buff=0.6)
+        cta_icons = VGroup(like_btn, comment_btn, share_btn).arrange(RIGHT, buff=1.2).next_to(sub_button, DOWN, buff=0.5)
         cta_group = VGroup(sub_button, cta_icons)
 
         self.play(FadeIn(cta_group, shift=UP), run_time=0.8)
