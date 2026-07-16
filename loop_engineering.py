@@ -67,7 +67,7 @@ class LoopEngineering(Scene):
             return rect, bubble_bg
 
         # =========================================================================
-        # 1. HOOK (0:00-0:12.84, duration = 12.84s)
+        # 1. HOOK (0:00-0:12.84, duration = 12.84s + 0.6s silence = 13.44s)
         # =========================================================================
 
         # Add decorative grid lines for visual richness (faded background)
@@ -102,14 +102,21 @@ class LoopEngineering(Scene):
         
         left_group = VGroup(prompt_shadow_left, prompt_box_left, prompt_label_left, prompt_lines_left, dec_line1, dec_line2)
 
-        # Right: simple loop icon with rotation
-        loop_circle = Circle(radius=1.1, color=GREEN, stroke_width=4).move_to(RIGHT * 3.2)
-        loop_arrow_head = Triangle(color=GREEN, fill_color=GREEN, fill_opacity=1).scale(0.15).move_to(
-            loop_circle.point_at_angle(PI / 2)
+        # Right: high-tech concentric loop circles
+        loop_circle_out = Circle(radius=1.1, color=GREEN, stroke_width=4).move_to(RIGHT * 3.2)
+        loop_arrow_out = Triangle(color=GREEN, fill_color=GREEN, fill_opacity=1).scale(0.15).move_to(
+            loop_circle_out.point_at_angle(PI / 2)
         ).rotate(-PI / 2)
-        loop_label = Text("Loop Engineering", font_size=14, color=GREEN, weight=BOLD, font="Arial").next_to(loop_circle, UP, buff=0.2)
-        calm_brain = Text("🧠", font_size=28).move_to(loop_circle.get_center())
-        right_group = VGroup(loop_circle, loop_arrow_head, calm_brain, loop_label)
+        
+        # Inner dashed rotating loop for visual richness
+        loop_circle_in = DashedVMobject(
+            Circle(radius=0.8, color=AMBER, stroke_width=2, stroke_opacity=0.6),
+            num_dashes=30
+        ).move_to(RIGHT * 3.2)
+        
+        loop_label = Text("Loop Engineering", font_size=14, color=GREEN, weight=BOLD, font="Arial").next_to(loop_circle_out, UP, buff=0.2)
+        calm_brain = Text("🧠", font_size=28).move_to(loop_circle_out.get_center())
+        right_group = VGroup(loop_circle_out, loop_arrow_out, loop_circle_in, calm_brain, loop_label)
 
         self.play(FadeIn(left_group, shift=UP), run_time=0.8)
         
@@ -118,18 +125,23 @@ class LoopEngineering(Scene):
         
         self.play(FadeIn(right_group, shift=UP), run_time=0.8)
         
-        # Rotate the loop arrow for a dynamic, visually rich feel
+        # Rotate concentric loops in opposite directions and pulse brain
         self.play(
-            Rotate(VGroup(loop_circle, loop_arrow_head), angle=-2*PI, about_point=loop_circle.get_center(), run_time=2.5),
+            Rotate(VGroup(loop_circle_out, loop_arrow_out), angle=-2*PI, about_point=loop_circle_out.get_center(), run_time=2.5),
+            Rotate(loop_circle_in, angle=2*PI, about_point=loop_circle_in.get_center(), run_time=2.5),
+            calm_brain.animate(rate_func=there_and_back).scale(1.2),
             rate_func=linear
         )
         self.wait(0.94)
 
-        # CRITICAL FIX: Make sure the split_line is faded out here!
+        # Fade out and clean screen
         self.play(FadeOut(left_group), FadeOut(right_group), FadeOut(split_line), run_time=0.8)
+        
+        # Silent pause at the end of Section 1
+        self.wait(0.6)
 
         # =========================================================================
-        # 2. THE OLD WAY: PROMPT ENGINEERING (0:12.84-0:28.87, duration = 16.03s)
+        # 2. THE OLD WAY: PROMPT ENGINEERING (0:13.44-0:29.47, duration = 16.03s + 0.6s silence = 16.63s)
         # =========================================================================
         prompt_shadow = RoundedRectangle(
             width=3.5, height=1.2, corner_radius=0.15,
@@ -145,6 +157,8 @@ class LoopEngineering(Scene):
         prompt_group = VGroup(prompt_shadow, prompt_box, prompt_text)
 
         arrow1 = Arrow(prompt_box.get_right(), prompt_box.get_right() + RIGHT * 2, color=BOX_BORDER, stroke_width=3)
+        # Energy packet dot flowing along the arrow path
+        energy_dot = Dot(color=BLUE, radius=0.1).move_to(arrow1.get_start())
 
         output_shadow = RoundedRectangle(
             width=2.8, height=1.2, corner_radius=0.15,
@@ -163,7 +177,11 @@ class LoopEngineering(Scene):
         self.play(FadeIn(prompt_group), run_time=1.0)
         self.play(Create(arrow1), FadeIn(output_group), run_time=1.2)
         
-        self.wait(5.0)
+        # Energy packet flows
+        self.play(MoveAlongPath(energy_dot, arrow1), run_time=0.8)
+        self.remove(energy_dot)
+        
+        self.wait(4.2)  # 5.0 - 0.8 = 4.2s
 
         # Make the cross draw beautifully
         line1 = Line(start=output_box.get_corner(UL), end=output_box.get_corner(DR), color=RED, stroke_width=6)
@@ -188,11 +206,13 @@ class LoopEngineering(Scene):
             FadeOut(red_cross), FadeOut(wrong_label),
             run_time=0.8
         )
+        
+        # Silent pause at the end of Section 2
+        self.wait(0.6)
 
         # =========================================================================
-        # 3. THE LOOP: WHAT IT ACTUALLY LOOKS LIKE (0:28.87-0:47.23, duration = 18.36s)
+        # 3. THE LOOP: WHAT IT ACTUALLY LOOKS LIKE (0:29.47-0:47.83, duration = 18.36s + 0.6s silence = 18.96s)
         # =========================================================================
-        # Palette matching the uploaded diagram
         BLUE_ACCENT = "#3B82F6"
         GREEN_ACCENT = "#10B981"
         AMBER_ACCENT = "#F59E0B"
@@ -292,7 +312,16 @@ class LoopEngineering(Scene):
         self.play(Create(loop_arrows[2]), FadeIn(nodes[3]), run_time=0.5)
         self.play(Create(loop_arrows[3]), run_time=0.5)
         
-        self.wait(4.5)
+        # Sequentially animate a pulse traveling along the loop arrows representing active cycling
+        flow_dot = Dot(color=BLUE, radius=0.1)
+        self.play(FadeIn(flow_dot.move_to(loop_arrows[0].get_start())), run_time=0.1)
+        self.play(MoveAlongPath(flow_dot, loop_arrows[0]), run_time=0.6)
+        self.play(flow_dot.animate.set_color(GREEN), MoveAlongPath(flow_dot, loop_arrows[1]), run_time=0.6)
+        self.play(flow_dot.animate.set_color(AMBER), MoveAlongPath(flow_dot, loop_arrows[2]), run_time=0.6)
+        self.play(flow_dot.animate.set_color(PURPLE), MoveAlongPath(flow_dot, loop_arrows[3]), run_time=0.6)
+        self.play(FadeOut(flow_dot), run_time=0.25)
+        
+        self.wait(1.75)  # 4.5 - 2.75 = 1.75s
 
         # Pulse the loop once to show it cycling and reveal the caption
         self.play(
@@ -310,20 +339,24 @@ class LoopEngineering(Scene):
         self.play(loop_diagram.animate.scale(0.65).to_edge(LEFT, buff=0.8), run_time=1.0)
         
         self.wait(6.16)
+        
+        # Silent pause at the end of Section 3
+        self.wait(0.6)
 
         # =========================================================================
-        # 4. WHY THIS WORKS BETTER (0:47.23-0:55, duration = 17.42s)
+        # 4. WHY THIS WORKS BETTER (0:48.43-1:05.85, duration = 17.42s + 0.6s silence = 18.02s)
         # =========================================================================
         why_title = Text("How Feedback Works", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
         self.play(FadeIn(why_title), run_time=0.5)
 
-        # PROPER PADDING & FONT FIX: Speech bubbles slightly expanded and text set to font_size=13
+        # Speech bubbles with AI robot faces next to them to show feedback impact
         vague_rect, vague_bubble = make_speech_bubble(
             width=3.6, height=1.1, color=MUTED, fill_color="#F1F5F9",
             position=RIGHT * 3 + UP * 1.2, pointer_dir="left"
         )
         vague_text = Text("\"Make it better\"", font_size=13, color=MUTED, weight=BOLD, font="Arial").move_to(vague_rect.get_center())
-        vague_group = VGroup(vague_bubble, vague_text)
+        robot_vague = Text("🤖 ❓", font_size=20).next_to(vague_bubble, LEFT, buff=0.25)
+        vague_group = VGroup(vague_bubble, vague_text, robot_vague)
         dead_end = Text("(dead end)", font_size=11, color=MUTED, font="Arial").next_to(vague_rect, DOWN, buff=0.15)
 
         self.play(FadeIn(vague_group), FadeIn(dead_end), run_time=0.8)
@@ -338,7 +371,8 @@ class LoopEngineering(Scene):
             "\"Cut this section\nto two sentences\"",
             font_size=13, color=GREEN, alignment="center", line_spacing=0.6, weight=BOLD, font="Arial"
         ).move_to(specific_rect.get_center())
-        specific_group = VGroup(specific_bubble, specific_text)
+        robot_smart = Text("🤖 💡", font_size=20).next_to(specific_bubble, LEFT, buff=0.25)
+        specific_group = VGroup(specific_bubble, specific_text, robot_smart)
         works_label = Text("(concrete target)", font_size=11, color=GREEN, font="Arial").next_to(specific_rect, DOWN, buff=0.15)
 
         self.play(FadeIn(specific_group), FadeIn(works_label), run_time=0.8)
@@ -352,14 +386,17 @@ class LoopEngineering(Scene):
             FadeOut(why_title),
             run_time=0.8
         )
+        
+        # Silent pause at the end of Section 4
+        self.wait(0.6)
 
         # =========================================================================
-        # 5. THE PRACTICAL VERSION (0:55-1:10, duration = 18.07s)
+        # 5. THE PRACTICAL VERSION (1:06.45-1:24.52, duration = 18.07s + 0.6s silence = 18.67s)
         # =========================================================================
         compare_title = Text("Which path is faster?", font_size=18, color=TEXT_COLOR, weight=BOLD, font="Arial").move_to(RIGHT * 2.2 + UP * 2.2)
         self.play(FadeIn(compare_title), run_time=0.5)
 
-        # Left card: 1 perfect prompt (with shadow)
+        # Left card: 1 perfect prompt (with shadow and red visual timeline bar)
         card1_shadow = RoundedRectangle(
             width=4, height=2.5, corner_radius=0.2,
             fill_color="#64748B", fill_opacity=0.15, stroke_width=0
@@ -370,15 +407,25 @@ class LoopEngineering(Scene):
             fill_color="#FEF2F2", fill_opacity=1
         ).move_to(LEFT * 3)
         card1_title = Text("1 perfect prompt", font_size=16, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center() + UP * 0.7)
-        card1_time = Text("10 min", font_size=28, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center())
-        card1_result = Text("mediocre result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card1.get_center() + DOWN * 0.7)
-        card1_group = VGroup(card1_shadow, card1, card1_title, card1_time, card1_result)
+        card1_time = Text("10 min", font_size=28, color=RED, weight=BOLD, font="Arial").move_to(card1.get_center() + UP * 0.1)
+        card1_result = Text("mediocre result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card1.get_center() + DOWN * 0.8)
+        
+        bar_bg1 = Rectangle(width=3.0, height=0.12, stroke_color=RED, stroke_width=1.5, fill_opacity=0).move_to(card1.get_center() + DOWN * 0.35)
+        bar_fill1 = Rectangle(width=0.01, height=0.12, stroke_width=0, fill_color=RED, fill_opacity=1).align_to(bar_bg1, LEFT)
+        
+        card1_group = VGroup(card1_shadow, card1, card1_title, card1_time, card1_result, bar_bg1, bar_fill1)
 
         self.play(FadeIn(card1_group, shift=UP), run_time=0.8)
         
-        self.wait(4.2)
+        # Slow loading bar for card 1 (representing the 10 min build time)
+        self.play(
+            UpdateFromAlphaFunc(bar_fill1, lambda m, a: m.stretch_to_fit_width(max(0.01, a * 3.0)).align_to(bar_bg1, LEFT)),
+            run_time=3.0
+        )
+        
+        self.wait(1.2)  # 4.2 - 3.0 = 1.2s
 
-        # Right card: 3 quick loops (with shadow)
+        # Right card: 3 quick loops (with shadow and green segmented timeline bars)
         card2_shadow = RoundedRectangle(
             width=4, height=2.5, corner_radius=0.2,
             fill_color="#64748B", fill_opacity=0.15, stroke_width=0
@@ -389,13 +436,29 @@ class LoopEngineering(Scene):
             fill_color="#ECFDF5", fill_opacity=1
         ).move_to(RIGHT * 3)
         card2_title = Text("3 quick loops", font_size=16, color=GREEN, weight=BOLD, font="Arial").move_to(card2.get_center() + UP * 0.7)
-        card2_time = Text("3 min total", font_size=28, color=GREEN, weight=BOLD, font="Arial").move_to(card2.get_center())
-        card2_result = Text("sharp result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card2.get_center() + DOWN * 0.7)
-        card2_group = VGroup(card2_shadow, card2, card2_title, card2_time, card2_result)
+        card2_time = Text("3 min total", font_size=28, color=GREEN, weight=BOLD, font="Arial").move_to(card2.get_center() + UP * 0.1)
+        card2_result = Text("sharp result", font_size=12, color=TEXT_COLOR, font="Arial").move_to(card2.get_center() + DOWN * 0.8)
+        
+        bar_bg2_1 = Rectangle(width=0.9, height=0.12, stroke_color=GREEN, stroke_width=1.5, fill_opacity=0).move_to(card2.get_center() + LEFT * 1.0 + DOWN * 0.35)
+        bar_bg2_2 = Rectangle(width=0.9, height=0.12, stroke_color=GREEN, stroke_width=1.5, fill_opacity=0).move_to(card2.get_center() + DOWN * 0.35)
+        bar_bg2_3 = Rectangle(width=0.9, height=0.12, stroke_color=GREEN, stroke_width=1.5, fill_opacity=0).move_to(card2.get_center() + RIGHT * 1.0 + DOWN * 0.35)
+        
+        bar_fill2_1 = Rectangle(width=0.9, height=0.12, stroke_width=0, fill_color=GREEN, fill_opacity=1).move_to(bar_bg2_1.get_center())
+        bar_fill2_2 = Rectangle(width=0.9, height=0.12, stroke_width=0, fill_color=GREEN, fill_opacity=1).move_to(bar_bg2_2.get_center())
+        bar_fill2_3 = Rectangle(width=0.9, height=0.12, stroke_width=0, fill_color=GREEN, fill_opacity=1).move_to(bar_bg2_3.get_center())
+        
+        card2_group = VGroup(card2_shadow, card2, card2_title, card2_time, card2_result, bar_bg2_1, bar_bg2_2, bar_bg2_3)
 
         self.play(FadeIn(card2_group, shift=UP), run_time=0.8)
         
-        self.wait(6.7)
+        # Segmented fast loading bars popping in sequentially (representing fast feedback cycles)
+        self.play(FadeIn(bar_fill2_1), run_time=0.5)
+        self.play(FadeIn(bar_fill2_2), run_time=0.5)
+        self.play(FadeIn(bar_fill2_3), run_time=0.5)
+        
+        card2_group.add(bar_fill2_1, bar_fill2_2, bar_fill2_3)
+        
+        self.wait(5.2)  # 6.7 - 1.5 = 5.2s
 
         # Green checkmark with a soft scale and Flash animation
         checkmark = Text("✓", font_size=48, color=GREEN, weight=BOLD, font="Arial").next_to(card2, UP, buff=0.2)
@@ -412,16 +475,19 @@ class LoopEngineering(Scene):
             FadeOut(compare_title),
             run_time=0.8
         )
+        
+        # Silent pause at the end of Section 5
+        self.wait(0.6)
 
         # =========================================================================
-        # 6. CLOSER (1:10-1:15, duration = 5.59s)
+        # 6. CLOSER (1:25.12-1:30.71, duration = 5.592s + 0.6s silence = 6.192s)
         # =========================================================================
         final_title = Text("Loop Engineering", font_size=44, color=GREEN, weight=BOLD, font="Arial").move_to(UP * 0.6)
         final_vs = Text(">", font_size=40, color=MUTED, weight=BOLD, font="Arial").next_to(final_title, DOWN, buff=0.25)
         final_subtitle = Text("Prompt Engineering", font_size=32, color=RED, weight=BOLD, font="Arial").next_to(final_vs, DOWN, buff=0.25)
         final_card = VGroup(final_title, final_vs, final_subtitle)
 
-        # Scale and center the loop diagram back first as closer transition, fading it back in
+        # Scale, center and FadeIn the loop diagram back first as closer transition
         self.play(
             loop_diagram.animate.scale(1.0/0.65).move_to(UP * 0.4),
             FadeIn(loop_diagram),
@@ -439,9 +505,12 @@ class LoopEngineering(Scene):
             run_time=1.2
         )
         self.wait(2.192)
+        
+        # Silent pause at the end of Section 6
+        self.wait(0.6)
 
         # =========================================================================
-        # 7. CALL TO ACTION (CTA) (1:15-1:22, duration = 7.49s) - PREMIUM YOUTUBE OUTRO
+        # 7. CALL TO ACTION (CTA) (1:31.31-1:38.80, duration = 7.488s) - PREMIUM YOUTUBE OUTRO
         # =========================================================================
         # CRITICAL OVERLAP FIX: Move the final card all the way to the top edge and scale it down
         self.play(final_card.animate.to_edge(UP, buff=0.5).scale(0.75), run_time=0.8)
@@ -471,11 +540,9 @@ class LoopEngineering(Scene):
         bell_icon = VGroup(bell_body, bell_base, bell_clapper)
         
         sub_button_contents = VGroup(yt_logo, sub_text, bell_icon).arrange(RIGHT, buff=0.4)
-        # Positioned lower down (centered at DOWN * 0.1) to avoid overlap with top card
         sub_button = VGroup(sub_btn_box, sub_button_contents).move_to(DOWN * 0.1)
         
         # --- LOWER CTA ICONS (Like, Comment, Share) ---
-        # EMOJI FALLBACK FIX: Removed font="Arial" on icons to allow system-level emoji rendering
         like_icon = Text("👍", font_size=28)
         like_label = Text("Like", font_size=14, color=TEXT_COLOR, font="Arial").next_to(like_icon, DOWN, buff=0.15)
         like_btn = VGroup(like_icon, like_label)
