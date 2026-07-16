@@ -490,10 +490,54 @@ class LoopEngineering(Scene):
         # =========================================================================
         # 6. CLOSER (1:25.12-1:30.71, duration = 5.592s + 0.6s silence = 6.192s)
         # =========================================================================
-        final_title = Text("Loop Engineering", font_size=44, color=GREEN, weight=BOLD, font="Arial").move_to(UP * 0.6)
-        final_vs = Text(">", font_size=40, color=MUTED, weight=BOLD, font="Arial").next_to(final_title, DOWN, buff=0.25)
-        final_subtitle = Text("Prompt Engineering", font_size=32, color=RED, weight=BOLD, font="Arial").next_to(final_vs, DOWN, buff=0.25)
-        final_card = VGroup(final_title, final_vs, final_subtitle)
+        # Premium comparison board container
+        board_shadow = RoundedRectangle(
+            width=8.6, height=3.2, corner_radius=0.25,
+            fill_color="#64748B", fill_opacity=0.12, stroke_width=0
+        ).move_to(UP * 0.4 + DOWN * 0.08 + RIGHT * 0.08)
+        
+        board_container = RoundedRectangle(
+            width=8.6, height=3.2, corner_radius=0.25,
+            stroke_color=BOX_BORDER, stroke_width=2,
+            fill_color="#F8FAFC", fill_opacity=0.95
+        ).move_to(UP * 0.4)
+        
+        # Left card: Loop Engineering
+        le_card = RoundedRectangle(
+            width=3.5, height=2.2, corner_radius=0.18,
+            stroke_color=GREEN, stroke_width=3,
+            fill_color="#ECFDF5", fill_opacity=1
+        ).move_to(LEFT * 2.1 + UP * 0.4)
+        
+        le_title = Text("Loop Engineering", font_size=15, color=GREEN, weight=BOLD, font="Arial").move_to(le_card.get_center() + UP * 0.45)
+        le_desc = Paragraph(
+            "Steer with feedback\nIterate to perfection\nFast and reliable",
+            font_size=10, color=TEXT_COLOR, alignment="center", font="Arial", line_spacing=0.55
+        ).move_to(le_card.get_center() + DOWN * 0.3)
+        
+        le_group = VGroup(le_card, le_title, le_desc)
+        
+        # Right card: Prompt Engineering
+        pe_card = RoundedRectangle(
+            width=3.5, height=2.2, corner_radius=0.18,
+            stroke_color=RED, stroke_width=2.5,
+            fill_color="#FEF2F2", fill_opacity=1
+        ).move_to(RIGHT * 2.1 + UP * 0.4)
+        
+        pe_title = Text("Prompt Engineering", font_size=15, color=RED, weight=BOLD, font="Arial").move_to(pe_card.get_center() + UP * 0.45)
+        pe_desc = Paragraph(
+            "One-shot guess upfront\nExhaustive instruction\nOften wrong or incomplete",
+            font_size=10, color=TEXT_COLOR, alignment="center", font="Arial", line_spacing=0.55
+        ).move_to(pe_card.get_center() + DOWN * 0.3)
+        
+        pe_group = VGroup(pe_card, pe_title, pe_desc)
+        
+        # Middle Greater-Than Badge
+        gt_circle = Circle(radius=0.45, fill_color=AMBER, fill_opacity=1, stroke_width=0).move_to(ORIGIN + UP * 0.4)
+        gt_symbol = Text(">", font_size=28, color=WHITE, weight=BOLD, font="Arial").move_to(gt_circle.get_center())
+        gt_group = VGroup(gt_circle, gt_symbol)
+        
+        final_card = VGroup(board_shadow, board_container, le_group, pe_group, gt_group)
 
         # Scale, center and FadeIn the loop diagram back first as closer transition
         self.play(
