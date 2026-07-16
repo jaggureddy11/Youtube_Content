@@ -28,27 +28,28 @@ class Recursion(Scene):
         # =========================================================================
         hook_title = Text("Recursion", font_size=36, color=BLUE, weight=BOLD, font="Arial").move_to(UP * 2.5)
         
-        # Draw three nested boxes representing nesting dolls / smaller versions
-        # Doll 1 (large, blue)
-        doll1_shadow = RoundedRectangle(width=3.2, height=2.2, corner_radius=0.2, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.06 + RIGHT * 0.06)
-        doll1 = RoundedRectangle(width=3.2, height=2.2, corner_radius=0.2, stroke_color=BLUE, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
-        doll1_text = Text("solve(problem)", font_size=14, color=BLUE, weight=BOLD, font="Arial").move_to(doll1.get_center())
-        doll1_group = VGroup(doll1_shadow, doll1, doll1_text)
+        # Draw three boxes in a horizontal row representing delegation of tasks
+        # Box 1 (large, blue)
+        doll1_shadow = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(LEFT * 3.8 + DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
+        doll1_box = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, stroke_color=BLUE, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(LEFT * 3.8 + DOWN * 0.3)
+        doll1_text = Text("solve(problem)", font_size=12, color=BLUE, weight=BOLD, font="Arial").move_to(doll1_box.get_center())
+        doll1_group = VGroup(doll1_shadow, doll1_box, doll1_text)
 
-        # Doll 2 (medium, orange)
-        doll2_shadow = RoundedRectangle(width=2.4, height=1.65, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
-        doll2 = RoundedRectangle(width=2.4, height=1.65, corner_radius=0.15, stroke_color=AMBER, stroke_width=2.5, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
-        doll2_text = Text("solve(smaller)", font_size=11, color=AMBER, weight=BOLD, font="Arial").move_to(doll2.get_center())
-        doll2_group = VGroup(doll2_shadow, doll2, doll2_text)
+        # Box 2 (medium, orange)
+        doll2_shadow = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
+        doll2_box = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, stroke_color=AMBER, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
+        doll2_text = Text("solve(smaller)", font_size=12, color=AMBER, weight=BOLD, font="Arial").move_to(doll2_box.get_center())
+        doll2_group = VGroup(doll2_shadow, doll2_box, doll2_text)
 
-        # Doll 3 (small, green)
-        doll3_shadow = RoundedRectangle(width=1.8, height=1.24, corner_radius=0.1, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.04 + RIGHT * 0.04)
-        doll3 = RoundedRectangle(width=1.8, height=1.24, corner_radius=0.1, stroke_color=GREEN, stroke_width=2, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
-        doll3_text = Text("solve(tiny)", font_size=9, color=GREEN, weight=BOLD, font="Arial").move_to(doll3.get_center())
-        doll3_group = VGroup(doll3_shadow, doll3, doll3_text)
+        # Box 3 (small, green)
+        doll3_shadow = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(RIGHT * 3.8 + DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
+        doll3_box = RoundedRectangle(width=2.6, height=1.5, corner_radius=0.15, stroke_color=GREEN, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(RIGHT * 3.8 + DOWN * 0.3)
+        doll3_text = Text("solve(tiny)", font_size=12, color=GREEN, weight=BOLD, font="Arial").move_to(doll3_box.get_center())
+        doll3_group = VGroup(doll3_shadow, doll3_box, doll3_text)
 
-        # Add the nested dolls first (background layers) so they remain hidden behind the opaque doll1
-        self.add(doll3_group, doll2_group)
+        # Connectors
+        a1 = CurvedArrow(doll1_box.get_right() + UP * 0.1, doll2_box.get_left() + UP * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2.5)
+        a2 = CurvedArrow(doll2_box.get_right() + UP * 0.1, doll3_box.get_left() + UP * 0.1, angle=-TAU/8, color=MUTED, stroke_width=2.5)
 
         self.play(
             FadeIn(hook_title, shift=DOWN * 0.3, rate_func=ease_out_back),
@@ -58,33 +59,37 @@ class Recursion(Scene):
         
         self.wait(3.0)
 
-        # Step 2: Slide doll1 left, slide doll2 out to the right (revealing it from behind doll1)
+        # Step 2: Draw first curved arrow and slide energy dot from Box 1 to reveal Box 2
+        flow_dot1 = Dot(color=BLUE, radius=0.08).move_to(a1.get_start())
+        self.play(Create(a1), run_time=0.4)
+        self.play(MoveAlongPath(flow_dot1, a1), run_time=0.3)
         self.play(
-            doll1_group.animate.move_to(LEFT * 1.1 + DOWN * 0.3),
-            doll2_group.animate.move_to(RIGHT * 1.1 + DOWN * 0.3),
-            run_time=0.8,
-            rate_func=ease_out_back
+            FadeOut(flow_dot1), 
+            FadeIn(doll2_group, scale=0.9, rate_func=ease_out_back), 
+            run_time=0.4
         )
         
-        self.wait(2.0)
+        self.wait(1.7)
 
-        # Step 3: Slide all dolls into mathematically symmetric layout with exactly 0.8 units spacing
-        # doll1 center -> -2.9, doll2 center -> 0.7, doll3 center -> 3.6
+        # Step 3: Draw second curved arrow and slide energy dot from Box 2 to reveal Box 3
+        flow_dot2 = Dot(color=AMBER, radius=0.08).move_to(a2.get_start())
+        self.play(Create(a2), run_time=0.4)
+        self.play(MoveAlongPath(flow_dot2, a2), run_time=0.3)
         self.play(
-            doll1_group.animate.move_to(LEFT * 2.9 + DOWN * 0.3),
-            doll2_group.animate.move_to(RIGHT * 0.7 + DOWN * 0.3),
-            doll3_group.animate.move_to(RIGHT * 3.6 + DOWN * 0.3),
-            run_time=0.8,
-            rate_func=ease_out_back
+            FadeOut(flow_dot2), 
+            FadeIn(doll3_group, scale=0.9, rate_func=ease_out_back), 
+            run_time=0.4
         )
 
-        self.wait(2.04)
+        self.wait(1.74)
 
         self.play(
             FadeOut(hook_title),
             FadeOut(doll1_group),
             FadeOut(doll2_group),
             FadeOut(doll3_group),
+            FadeOut(a1),
+            FadeOut(a2),
             run_time=0.8
         )
         self.wait(0.6)
