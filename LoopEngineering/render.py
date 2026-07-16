@@ -26,10 +26,19 @@ def main():
     print("Generating voiceover audios...")
     asyncio.run(generate_audio())
     
-    print("Writing concat_list.txt...")
+    print("Creating 0.6-second silence.mp3...")
+    # Generate 0.6 seconds of mono silence at 24kHz
+    subprocess.run([
+        "ffmpeg", "-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", 
+        "-t", "0.6", "silence.mp3"
+    ], check=True)
+    
+    print("Writing concat_list.txt with silent gaps...")
     with open("concat_list.txt", "w") as f:
         for i in range(len(script_lines)):
             f.write(f"file 'line_{i+1:02d}.mp3'\n")
+            if i < len(script_lines) - 1:
+                f.write("file 'silence.mp3'\n")
     
     print("Concatenating audios using ffmpeg...")
     subprocess.run([
@@ -37,13 +46,13 @@ def main():
         "-i", "concat_list.txt", "-c", "copy", "voiceover.mp3"
     ], check=True)
     
-    print("Rendering Manim video...")
+    print("Running Manim build on loop_engineering.py...")
     subprocess.run([
-        "manim", "-qh", "loop_engineering_explainer.py", "LoopEngineeringExplainer"
+        "manim", "-qh", "loop_engineering.py", "LoopEngineering"
     ], check=True)
     
     # Combine video and audio
-    video_path = "media/videos/loop_engineering_explainer/1080p60/LoopEngineeringExplainer.mp4"
+    video_path = "media/videos/loop_engineering/1080p60/LoopEngineering.mp4"
     output_path = "LoopEngineering_final.mp4"
     
     print(f"Merging video ({video_path}) and audio (voiceover.mp3) using ffmpeg...")
