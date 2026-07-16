@@ -29,10 +29,26 @@ class Recursion(Scene):
         hook_title = Text("Recursion", font_size=36, color=BLUE, weight=BOLD, font="Arial").move_to(UP * 2.5)
         
         # Draw three nested boxes representing nesting dolls / smaller versions
-        doll1_shadow = RoundedRectangle(width=4.0, height=2.6, corner_radius=0.2, fill_color="#E2E8F0", fill_opacity=0.3, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.06 + RIGHT * 0.06)
-        doll1 = RoundedRectangle(width=4.0, height=2.6, corner_radius=0.2, stroke_color=BLUE, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
-        doll1_text = Text("solve(problem)", font_size=16, color=BLUE, weight=BOLD, font="Arial").move_to(doll1.get_center())
+        # Doll 1 (large, blue)
+        doll1_shadow = RoundedRectangle(width=3.2, height=2.2, corner_radius=0.2, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.06 + RIGHT * 0.06)
+        doll1 = RoundedRectangle(width=3.2, height=2.2, corner_radius=0.2, stroke_color=BLUE, stroke_width=3, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
+        doll1_text = Text("solve(problem)", font_size=14, color=BLUE, weight=BOLD, font="Arial").move_to(doll1.get_center())
         doll1_group = VGroup(doll1_shadow, doll1, doll1_text)
+
+        # Doll 2 (medium, orange)
+        doll2_shadow = RoundedRectangle(width=2.4, height=1.65, corner_radius=0.15, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
+        doll2 = RoundedRectangle(width=2.4, height=1.65, corner_radius=0.15, stroke_color=AMBER, stroke_width=2.5, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
+        doll2_text = Text("solve(smaller)", font_size=11, color=AMBER, weight=BOLD, font="Arial").move_to(doll2.get_center())
+        doll2_group = VGroup(doll2_shadow, doll2, doll2_text)
+
+        # Doll 3 (small, green)
+        doll3_shadow = RoundedRectangle(width=1.8, height=1.24, corner_radius=0.1, fill_color="#64748B", fill_opacity=0.15, stroke_width=0).move_to(DOWN * 0.3 + DOWN * 0.04 + RIGHT * 0.04)
+        doll3 = RoundedRectangle(width=1.8, height=1.24, corner_radius=0.1, stroke_color=GREEN, stroke_width=2, fill_color=BOX_FILL, fill_opacity=1).move_to(DOWN * 0.3)
+        doll3_text = Text("solve(tiny)", font_size=9, color=GREEN, weight=BOLD, font="Arial").move_to(doll3.get_center())
+        doll3_group = VGroup(doll3_shadow, doll3, doll3_text)
+
+        # Add the nested dolls first (background layers) so they remain hidden behind the opaque doll1
+        self.add(doll3_group, doll2_group)
 
         self.play(
             FadeIn(hook_title, shift=DOWN * 0.3, rate_func=ease_out_back),
@@ -42,33 +58,22 @@ class Recursion(Scene):
         
         self.wait(3.0)
 
-        # Spawns doll 2 (smaller version) popping out from doll1's center
-        doll2_shadow = RoundedRectangle(width=2.8, height=1.8, corner_radius=0.15, fill_color="#E2E8F0", fill_opacity=0.3, stroke_width=0).move_to(RIGHT * 1.5 + DOWN * 0.3 + DOWN * 0.05 + RIGHT * 0.05)
-        doll2 = RoundedRectangle(width=2.8, height=1.8, corner_radius=0.15, stroke_color=AMBER, stroke_width=2.5, fill_color=BOX_FILL, fill_opacity=1).move_to(RIGHT * 1.5 + DOWN * 0.3)
-        doll2_text = Text("solve(smaller)", font_size=12, color=AMBER, weight=BOLD, font="Arial").move_to(doll2.get_center())
-        doll2_group = VGroup(doll2_shadow, doll2, doll2_text)
-
-        # Animate the pop-out transition
+        # Step 2: Slide doll1 left, slide doll2 out to the right (revealing it from behind doll1)
         self.play(
-            doll1_group.animate.scale(0.8).shift(LEFT * 1.8),
-            TransformFromCopy(doll1, doll2_group),
+            doll1_group.animate.move_to(LEFT * 1.1 + DOWN * 0.3),
+            doll2_group.animate.move_to(RIGHT * 1.1 + DOWN * 0.3),
             run_time=0.8,
             rate_func=ease_out_back
         )
         
         self.wait(2.0)
 
-        # Spawns doll 3 (even smaller version) popping out from doll2's center
-        doll3_shadow = RoundedRectangle(width=1.9, height=1.2, corner_radius=0.1, fill_color="#E2E8F0", fill_opacity=0.3, stroke_width=0).move_to(RIGHT * 3.1 + DOWN * 0.3 + DOWN * 0.04 + RIGHT * 0.04)
-        doll3 = RoundedRectangle(width=1.9, height=1.2, corner_radius=0.1, stroke_color=GREEN, stroke_width=2, fill_color=BOX_FILL, fill_opacity=1).move_to(RIGHT * 3.1 + DOWN * 0.3)
-        doll3_text = Text("solve(tiny)", font_size=10, color=GREEN, weight=BOLD, font="Arial").move_to(doll3.get_center())
-        doll3_group = VGroup(doll3_shadow, doll3, doll3_text)
-
-        # Animate the second pop-out transition
+        # Step 3: Slide all dolls into mathematically symmetric layout with exactly 0.8 units spacing
+        # doll1 center -> -2.9, doll2 center -> 0.7, doll3 center -> 3.6
         self.play(
-            doll1_group.animate.scale(0.85).shift(LEFT * 1.0),
-            doll2_group.animate.scale(0.85).shift(LEFT * 0.6),
-            TransformFromCopy(doll2, doll3_group),
+            doll1_group.animate.move_to(LEFT * 2.9 + DOWN * 0.3),
+            doll2_group.animate.move_to(RIGHT * 0.7 + DOWN * 0.3),
+            doll3_group.animate.move_to(RIGHT * 3.6 + DOWN * 0.3),
             run_time=0.8,
             rate_func=ease_out_back
         )
