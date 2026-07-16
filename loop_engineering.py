@@ -539,24 +539,12 @@ class LoopEngineering(Scene):
         
         final_card = VGroup(board_shadow, board_container, le_group, pe_group, gt_group)
 
-        # Scale, center and FadeIn the loop diagram back first as closer transition
+        # Fade in the premium comparison board directly
         self.play(
-            loop_diagram.animate.scale(1.0/0.65).move_to(UP * 0.4),
-            FadeIn(loop_diagram),
-            run_time=1.0
-        )
-        self.play(
-            loop_diagram.animate.scale(1.1),
-            rate_func=there_and_back,
-            run_time=1.2
-        )
-        
-        self.play(
-            FadeOut(loop_diagram),
             FadeIn(final_card, scale=0.85),
             run_time=1.2
         )
-        self.wait(2.192)
+        self.wait(4.392)
         
         # Silent pause at the end of Section 6
         self.wait(0.6)
